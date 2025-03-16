@@ -1,4 +1,4 @@
-# test
+# escape game
 このリポジトリには、Unityで使用できるスクリプトをまとめています。
 
 ## PlayerController
