@@ -4,76 +4,33 @@ using UnityEngine;
 
 public class camera : MonoBehaviour
 {
-    [SerializeField] private float mouseSensitivity = 200f; // ƒ}ƒEƒXŠ´“xiŒã‚Åİ’è‰æ–Ê‚Å•ÏX‰Â”\j
+    [SerializeField] private float mouseSensitivity = 200f; // ãƒã‚¦ã‚¹æ„Ÿåº¦ï¼ˆå¾Œã§è¨­å®šç”»é¢ã§å¤‰æ›´å¯èƒ½ï¼‰
     private float xRotation = 0f;
-    private GameObject hitItem;
 
     void Start()
     {
-        // ƒJ[ƒ\ƒ‹‚ğ”ñ•\¦•ŒÅ’è
+        // ã‚«ãƒ¼ã‚½ãƒ«ã‚’éè¡¨ç¤ºï¼†å›ºå®š
         //Cursor.lockState = CursorLockMode.Locked;
         //Cursor.visible = false;
     }
 
     void Update()
     {
-        // ƒ}ƒEƒX‚Ì“ü—Í‚ğæ“¾
+        // ãƒã‚¦ã‚¹ã®å…¥åŠ›ã‚’å–å¾—
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
-        // c•ûŒü‚Ì‰ñ“]iƒJƒƒ‰‚Ìã‰ºj
+        // ç¸¦æ–¹å‘ã®å›è»¢ï¼ˆã‚«ãƒ¡ãƒ©ã®ä¸Šä¸‹ï¼‰
         xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f); // ã‰º90“x‚Ü‚Å§ŒÀ
+        xRotation = Mathf.Clamp(xRotation, -90f, 90f); // ä¸Šä¸‹90åº¦ã¾ã§åˆ¶é™
 
-        // ‰ñ“]‚ğ“K—p
+        // å›è»¢ã‚’é©ç”¨
         transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
-        transform.parent.Rotate(Vector3.up * mouseX); // eƒIƒuƒWƒFƒNƒgiƒvƒŒƒCƒ„[j‚ğ¶‰E‚É‰ñ“]
-
-
-
-        // ‰æ–Ê’†‰›‚ÌƒXƒNƒŠ[ƒ“À•W‚ğæ“¾
-        Vector3 centerScreenPosition = new Vector3(Screen.width / 2, Screen.height / 2, 0);
-
-        // ‰æ–Ê’†‰›‚ÌƒXƒNƒŠ[ƒ“À•W‚ğƒ[ƒ‹ƒhÀ•W‚É•ÏŠ·
-        Ray ray = Camera.main.ScreenPointToRay(centerScreenPosition);
-        RaycastHit hit;
-
-
-        // ‘O‰ñ‚Ì hitItem ‚Ì Outline ‚ğ–³Œø‰»i‘O‰ñ‚ÌƒIƒuƒWƒFƒNƒg‚©‚ç Outline ‚ğíœj
-        if (hitItem != null)
-        {
-            Outline outline = hitItem.GetComponent<Outline>();
-            if (outline != null)
-            {
-                outline.enabled = false; // Outline ‚ğ–³Œø‰»
-            }
-            hitItem = null; // hitItem ‚ğ‹ó‚É‚·‚é
-        }
-
-        // ƒŒƒC‚ªƒIƒuƒWƒFƒNƒg‚É“–‚½‚Á‚½ê‡‚Ì‚İˆ—‚ğÀs
-        if (Physics.Raycast(ray, out hit))
-        {
-            // hit.collider ‚ª null ‚Å‚È‚¢‚©ƒ`ƒFƒbƒN
-            if (hit.collider != null && hit.collider.CompareTag("teaCup"))
-            {
-                // ƒNƒŠƒbƒN‚µ‚½ƒJƒbƒv‚ÌGameObject‚ğ•Û‘¶
-                hitItem = hit.collider.gameObject;
-
-                // Šù‚É Outline ƒRƒ“ƒ|[ƒlƒ“ƒg‚ª‚ ‚é‚©Šm”F
-                Outline outline = hitItem.GetComponent<Outline>();
-                if (outline == null)
-                {
-                    // Outline ƒRƒ“ƒ|[ƒlƒ“ƒg‚ª‚È‚¢ê‡‚Í’Ç‰Á
-                    outline = hitItem.AddComponent<Outline>();
-                }
-
-                // Outline ‚ğ—LŒø‰»
-                outline.enabled = true;
-            }
+        transform.parent.Rotate(Vector3.up * mouseX); // è¦ªã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆï¼ˆãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ï¼‰ã‚’å·¦å³ã«å›è»¢
         }
     }
 
-    // İ’è‰æ–Ê‚ÅŠ´“x‚ğ•ÏX‚·‚é‚½‚ß‚ÌŠÖ”
+    // è¨­å®šç”»é¢ã§æ„Ÿåº¦ã‚’å¤‰æ›´ã™ã‚‹ãŸã‚ã®é–¢æ•°
     public void SetMouseSensitivity(float sensitivity)
     {
         mouseSensitivity = sensitivity;
