@@ -1,58 +1,61 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class OutlineController : MonoBehaviour
 {
-    private GameObject hitItem;
+    private GameObject hitCup;
+    public Text EventTxt;   //ãƒ†ã‚­ã‚¹ãƒˆã€Œã‚¯ãƒªãƒƒã‚¯ã§ã‚«ãƒƒãƒ—ã‚’ç§»å‹•ã€
 
     // Start is called before the first frame update
     void Start()
     {
-
+        EventTxt.enabled = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-        // ‰æ–Ê’†‰›‚ÌƒXƒNƒŠ[ƒ“À•W‚ğæ“¾
+        // ç”»é¢ä¸­å¤®ã®ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã‚’å–å¾—
         Vector3 centerScreenPosition = new Vector3(Screen.width / 2, Screen.height / 2, 0);
 
-        // ‰æ–Ê’†‰›‚ÌƒXƒNƒŠ[ƒ“À•W‚ğƒ[ƒ‹ƒhÀ•W‚É•ÏŠ·
+        // ç”»é¢ä¸­å¤®ã®ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã‚’ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™ã«å¤‰æ›
         Ray ray = Camera.main.ScreenPointToRay(centerScreenPosition);
         RaycastHit hit;
 
 
-        // ‘O‰ñ‚Ì hitItem ‚Ì Outline ‚ğ–³Œø‰»i‘O‰ñ‚ÌƒIƒuƒWƒFƒNƒg‚©‚ç Outline ‚ğíœj
-        if (hitItem != null)
+        // å‰å›ã® hitItem ã® Outline ã‚’ç„¡åŠ¹åŒ–ï¼ˆå‰å›ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‹ã‚‰ Outline ã‚’å‰Šé™¤ï¼‰
+        if (hitCup != null)
         {
-            Outline outline = hitItem.GetComponent<Outline>();
+            Outline outline = hitCup.GetComponent<Outline>();
             if (outline != null)
             {
-                outline.enabled = false; // Outline ‚ğ–³Œø‰»
+                outline.enabled = false; // Outline ã‚’ç„¡åŠ¹åŒ–
             }
-            hitItem = null; // hitItem ‚ğ‹ó‚É‚·‚é
+            hitCup = null; // hitItem ã‚’ç©ºã«ã™ã‚‹
+            EventTxt.enabled = false;
         }
 
-        // ƒŒƒC‚ªƒIƒuƒWƒFƒNƒg‚É“–‚½‚Á‚½ê‡‚Ì‚İˆ—‚ğÀs
+        // ãƒ¬ã‚¤ãŒã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«å½“ãŸã£ãŸå ´åˆã®ã¿å‡¦ç†ã‚’å®Ÿè¡Œ
         if (Physics.Raycast(ray, out hit))
         {
-            // hit.collider ‚ª null ‚Å‚È‚¢‚©ƒ`ƒFƒbƒN
+            // hit.collider ãŒ null ã§ãªã„ã‹ãƒã‚§ãƒƒã‚¯
             if (hit.collider != null && hit.collider.CompareTag("teaCup"))
             {
-                // ƒNƒŠƒbƒN‚µ‚½ƒJƒbƒv‚ÌGameObject‚ğ•Û‘¶
-                hitItem = hit.collider.gameObject;
+                  // ã‚¯ãƒªãƒƒã‚¯ã—ãŸã‚«ãƒƒãƒ—ã®GameObjectã‚’ä¿å­˜
+                  hitCup = hit.collider.gameObject;
+                  //ã‚¤ãƒ™ãƒ³ãƒˆãƒ†ã‚­ã‚¹ãƒˆã‚’è¡¨ç¤º
+                  EventTxt.enabled = true;
 
-                // Šù‚É Outline ƒRƒ“ƒ|[ƒlƒ“ƒg‚ª‚ ‚é‚©Šm”F
-                Outline outline = hitItem.GetComponent<Outline>();
-                if (outline == null)
-                {
-                    // Outline ƒRƒ“ƒ|[ƒlƒ“ƒg‚ª‚È‚¢ê‡‚Í’Ç‰Á
-                    outline = hitItem.AddComponent<Outline>();
-                }
+                // æ—¢ã« Outline ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆãŒã‚ã‚‹ã‹ç¢ºèª
+                Outline outline = hitCup.GetComponent<Outline>();
+                    if (outline == null)
+                    {
+                        // Outline ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆãŒãªã„å ´åˆã¯è¿½åŠ 
+                        outline = hitCup.AddComponent<Outline>();
+                    }
 
-                // Outline ‚ğ—LŒø‰»
-                outline.enabled = true;
+                    // Outline ã‚’æœ‰åŠ¹åŒ–
+                    outline.enabled = true;
             }
         }
     }
