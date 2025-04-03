@@ -6,11 +6,11 @@ using UnityEngine.UI;
 
 public class Gimmick2 : MonoBehaviour
 {
-    public GameObject hitItem;  //‰æ–Ê’†‰›‚É‚ ‚éƒIƒuƒWƒFƒNƒg
-    public GameObject selectIce;    //‘I‘ğ‚µ‚½ƒAƒCƒX
+    public GameObject hitItem;  //ç”»é¢ä¸­å¤®ã«ã‚ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
+    public GameObject selectIce;    //é¸æŠã—ãŸã‚¢ã‚¤ã‚¹
     public Text EventTxt;
-    public GameObject IceA, IceB, IceC, IceD;   //ƒAƒCƒX‚ÌƒIƒuƒWƒFƒNƒg
-    public GameObject SwichA, SwichB, SwichC, SwichD;   //ƒAƒCƒX‚ÌƒIƒuƒWƒFƒNƒg
+    public GameObject IceA, IceB, IceC, IceD;   //ã‚¢ã‚¤ã‚¹ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
+    public GameObject SwichA, SwichB, SwichC, SwichD;   //ã‚¢ã‚¤ã‚¹ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
     private int iceCnt;
     private List<GameObject> answerList,selectIceList;
 
@@ -26,62 +26,62 @@ public class Gimmick2 : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // ‰æ–Ê’†‰›‚ÌƒXƒNƒŠ[ƒ“À•W‚ğæ“¾
+        // ç”»é¢ä¸­å¤®ã®ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã‚’å–å¾—
         Vector3 centerScreenPosition = new Vector3(Screen.width / 2, Screen.height / 2, 0);
 
-        // ‰æ–Ê’†‰›‚ÌƒXƒNƒŠ[ƒ“À•W‚ğƒ[ƒ‹ƒhÀ•W‚É•ÏŠ·
+        // ç”»é¢ä¸­å¤®ã®ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã‚’ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™ã«å¤‰æ›
         Ray ray = Camera.main.ScreenPointToRay(centerScreenPosition);
         RaycastHit hit;
 
 
-        // ‘O‰ñ‚Ì hitItem ‚Ì Outline ‚ğ–³Œø‰»i‘O‰ñ‚ÌƒIƒuƒWƒFƒNƒg‚©‚ç Outline ‚ğíœj
+        // å‰å›ã® hitItem ã® Outline ã‚’ç„¡åŠ¹åŒ–ï¼ˆå‰å›ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‹ã‚‰ Outline ã‚’å‰Šé™¤ï¼‰
         if (hitItem != null)
         {
             Outline outline = hitItem.GetComponent<Outline>();
             if (outline != null)
             {
-                outline.enabled = false; // Outline ‚ğ–³Œø‰»
+                outline.enabled = false; // Outline ã‚’ç„¡åŠ¹åŒ–
             }
-            hitItem = null; // hitItem ‚ğ‹ó‚É‚·‚é
+            hitItem = null; // hitItem ã‚’ç©ºã«ã™ã‚‹
             EventTxt.enabled = false;
         }
 
-        // ƒŒƒC‚ªƒIƒuƒWƒFƒNƒg‚É“–‚½‚Á‚½ê‡‚Ì‚İˆ—‚ğÀs
+        // ãƒ¬ã‚¤ãŒã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«å½“ãŸã£ãŸå ´åˆã®ã¿å‡¦ç†ã‚’å®Ÿè¡Œ
         if (Physics.Raycast(ray, out hit))
         {
-            // hit.collider ‚ª null ‚Å‚È‚¢‚©ƒ`ƒFƒbƒN
-            if (hit.collider != null && hit.collider.CompareTag("Item"))
+            // hit.collider ãŒ null ã§ãªã„ã‹ãƒã‚§ãƒƒã‚¯
+            if (hit.collider != null && hit.collider.CompareTag("Swich"))
             {
-                // ƒNƒŠƒbƒN‚µ‚½ƒAƒCƒeƒ€‚ÌGameObject‚ğ•Û‘¶
+                // ã‚¯ãƒªãƒƒã‚¯ã—ãŸã‚¢ã‚¤ãƒ†ãƒ ã®GameObjectã‚’ä¿å­˜
                 hitItem = hit.collider.gameObject;
 
                 Outline outline = hitItem.GetComponent<Outline>();
 
-                // Outline ‚ğ—LŒø‰»
+                // Outline ã‚’æœ‰åŠ¹åŒ–
                 outline.enabled = true;
 
-                //ƒCƒxƒ“ƒgƒeƒLƒXƒg‚ğ•\¦
-                EventTxt.text = "ƒ{ƒ^ƒ“‚ğƒNƒŠƒbƒN";
+                //ã‚¤ãƒ™ãƒ³ãƒˆãƒ†ã‚­ã‚¹ãƒˆã‚’è¡¨ç¤º
+                EventTxt.text = "ãƒœã‚¿ãƒ³ã‚’ã‚¯ãƒªãƒƒã‚¯";
                 EventTxt.enabled = true;
             }
         }
 
         if (hitItem != null)
         {
-            if (iceCnt < 4) //ƒAƒCƒX‚Í4ŒÂ‚Ü‚Å
+            if (iceCnt < 4) //ã‚¢ã‚¤ã‚¹ã¯4å€‹ã¾ã§
             {
                 if (Input.GetMouseButtonDown(0))
                 {
-                    //‘I‘ğ‚µ‚½ƒ{ƒ^ƒ“‚ğ‚à‚Æ‚É‘I‘ğ‚µ‚½ƒAƒCƒX‚ğ“o˜^
+                    //é¸æŠã—ãŸãƒœã‚¿ãƒ³ã‚’ã‚‚ã¨ã«é¸æŠã—ãŸã‚¢ã‚¤ã‚¹ã‚’ç™»éŒ²
                     SwichToIce(hitItem);
                     
-                    //‘I‘ğ‚µ‚½ƒAƒCƒX‚ğoŒ»
+                    //é¸æŠã—ãŸã‚¢ã‚¤ã‚¹ã‚’å‡ºç¾
                     AddIce(selectIce);
                 }
             }
             else
             {
-                //³‚µ‚¢ƒAƒCƒX‚ğ‘I‚ñ‚Å‚¢‚é‚©”»’è
+                //æ­£ã—ã„ã‚¢ã‚¤ã‚¹ã‚’é¸ã‚“ã§ã„ã‚‹ã‹åˆ¤å®š
                 CheckIce();
             }
 
@@ -111,7 +111,7 @@ public class Gimmick2 : MonoBehaviour
 
     void AddIce(GameObject selectIce)
     {
-        Instantiate(selectIce);   //ƒAƒCƒXƒIƒuƒWƒFƒNƒg‚ğoŒ»
+        Instantiate(selectIce);   //ã‚¢ã‚¤ã‚¹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’å‡ºç¾
         selectIceList.Add(selectIce);
         iceCnt++;
     }
@@ -121,6 +121,10 @@ public class Gimmick2 : MonoBehaviour
         if (answerList.SequenceEqual(selectIceList))
         {
             Debug.Log("GameClear!!");
+        }
+        else
+        {
+            Debug.Log("Miss...");
         }
     }
 }
