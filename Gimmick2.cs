@@ -4,15 +4,19 @@ using UnityEngine.UI;
 
 public class Gimmick2 : MonoBehaviour
 {
+    public int stageNumber;
     public GameObject hitItem;  //画面中央にあるオブジェクト
     public GameObject selectIce;    //選択したアイス
-    public Text EventTxt;
+
     public GameObject IceA, IceB, IceC, IceD;   //アイスのオブジェクト
-    public GameObject SwichA, SwichB, SwichC, SwichD;   //アイスのオブジェクト
-    private int iceCnt;
-    private List<GameObject> selectIceList;
-    private List<string> answerList;
-    public string iceId;
+    public GameObject SwichA, SwichB, SwichC, SwichD;   //スイッチのオブジェクト
+
+    private List<GameObject> selectIceList; //選択したアイスを記録
+    private List<string> answerList;        //正解のアイスを記録
+
+    public Text EventTxt;
+    public GameObject Gate; //次の部屋へのゲート
+    private int iceCnt;     //現在重ねているアイスの個数
 
     // Start is called before the first frame update
     void Start()
@@ -23,6 +27,9 @@ public class Gimmick2 : MonoBehaviour
         //正しいアイスの順番を登録
         answerList = new List<string> { "IceA", "IceB", "IceC", "IceD" };
         selectIceList = new List<GameObject>();
+
+        //次の部屋へのゲートを非表示
+        Gate.SetActive(false);
     }
 
     // Update is called once per frame
@@ -85,6 +92,7 @@ public class Gimmick2 : MonoBehaviour
                 if (CheckIce())
                 {
                     Debug.Log("GameClear!!");
+                    Gate.SetActive(true);
                 }
             }
             else if (iceCnt >= 5)
