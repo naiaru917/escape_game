@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,14 +10,18 @@ public class Gimmick2 : MonoBehaviour
     public GameObject IceA, IceB, IceC, IceD;   //アイスのオブジェクト
     public GameObject SwichA, SwichB, SwichC, SwichD;   //アイスのオブジェクト
     private int iceCnt;
-    private List<GameObject> answerList,selectIceList;
+    private List<GameObject> selectIceList;
+    private List<string> answerList;
+    public string iceId;
 
     // Start is called before the first frame update
     void Start()
     {
         EventTxt.enabled = false;
         iceCnt = 0;
-        answerList = new List<GameObject> { IceA, IceB, IceC, IceD };
+
+        //正しいアイスの順番を登録
+        answerList = new List<string> { "IceA", "IceB", "IceC", "IceD" };
         selectIceList = new List<GameObject>();
     }
 
@@ -68,21 +70,33 @@ public class Gimmick2 : MonoBehaviour
 
         if (hitItem != null)
         {
-            if (iceCnt < 4) //アイスは4個まで
+            if (Input.GetMouseButtonDown(0))
             {
-                if (Input.GetMouseButtonDown(0))
+                //選択したボタンをもとに選択したアイスを登録
+                SwichToIce(hitItem);
+
+                //選択したアイスを出現
+                AddIce(selectIce);
+            }
+
+            if (iceCnt == 4)
+            {
+                //アイスの順番が合っているか判定
+                if (CheckIce())
                 {
-                    //選択したボタンをもとに選択したアイスを登録
-                    SwichToIce(hitItem);
-                    
-                    //選択したアイスを出現
-                    AddIce(selectIce);
+                    Debug.Log("GameClear!!");
                 }
             }
-            else
+            else if (iceCnt >= 5)
             {
-                //正しいアイスを選んでいるか判定
-                CheckIce();
+                //アイスを削除
+                ResetGimmick();
+
+                //選択したボタンをもとに選択したアイスを登録
+                SwichToIce(hitItem);
+
+                //選択したアイスを出現
+                AddIce(selectIce);
             }
 
         }
@@ -111,20 +125,31 @@ public class Gimmick2 : MonoBehaviour
 
     void AddIce(GameObject selectIce)
     {
-        Instantiate(selectIce);   //アイスオブジェクトを出現
-        selectIceList.Add(selectIce);
+        GameObject instance = Instantiate(selectIce);  //アイス（インスタンス）を生成
+        selectIceList.Add(instance);
         iceCnt++;
     }
 
-    void CheckIce()
+    bool CheckIce()
     {
-        if (answerList.SequenceEqual(selectIceList))
+        for (int i = 0; i < answerList.Count; i++)
         {
-            Debug.Log("GameClear!!");
+            string correctName = answerList[i];
+            string selectedName = selectIceList[i].name.Replace("(Clone)", "").Trim();
+
+            if (correctName != selectedName)
+                return false;
         }
-        else
+        return true;
+    }
+
+    void ResetGimmick()
+    {
+        foreach (GameObject ice in selectIceList)
         {
-            Debug.Log("Miss...");
+            Destroy(ice);   //アイスの削除
         }
+        selectIceList.Clear(); // リストも空に
+        iceCnt = 0; //アイスの個数を空に
     }
 }
