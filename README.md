@@ -6,6 +6,7 @@
 ## Player関連
 - PlayerController...プレイヤーの移動処理
 - camera...一人称（FPS）視点のカメラ処理
+- setting...現在のステージ位置などの情報を記録
 
 ## Gimmick
 - Gimmick1...謎解きギミック1の処理
@@ -26,4 +27,5 @@
 
 - ResetButton...ギミックをリセットする処理
 - OutlineController...画面中央にあるアクション可能なオブジェクトにアウトラインを追加
+- Gate...次のステージへ行くためのゲート。接触することで移動可能。
 
