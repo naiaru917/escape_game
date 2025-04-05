@@ -18,8 +18,12 @@ public class Gate : MonoBehaviour
                     Setting.stageNum++;
                     break;
                 case 1:
+                    SceneManager.LoadScene("Stage3");
+                    Setting.stageNum++;
+                    break;
+                case 2:
                     SceneManager.LoadScene("Stage1");
-                    Setting.stageNum=0;
+                    Setting.stageNum = 0;
                     break;
 
             }
