@@ -10,8 +10,8 @@ public class camera : MonoBehaviour
     void Start()
     {
         // カーソルを非表示＆固定
-        //Cursor.lockState = CursorLockMode.Locked;
-        //Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     void Update()
