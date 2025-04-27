@@ -7,37 +7,34 @@ using UnityEngine.UI;
 public class CupCakeGimmick : MonoBehaviour
 {
     public GameObject CupCakeA, CupCakeB, CupCakeC;
-    List<GameObject> targets_pos = new List<GameObject>(); // ‚·‚×‚Ä‚ÌƒJƒbƒv
-    List<bool> isOccupied;  //ƒJƒbƒvƒP[ƒL‚ª¶¬‚³‚ê‚Ä‚¢‚ê‚ÎTrueA‚³‚ê‚Ä‚¢‚È‚¢‚Ì‚È‚çFalse
-    private int targetCnt;
+    List<GameObject> targets_pos = new List<GameObject>(); // ã™ã¹ã¦ã®ã‚«ãƒƒãƒ—
+    List<bool> isOccupied;  //ã‚«ãƒƒãƒ—ã‚±ãƒ¼ã‚­ãŒç”Ÿæˆã•ã‚Œã¦ã„ã‚Œã°Trueã€ã•ã‚Œã¦ã„ãªã„ã®ãªã‚‰False
+    private int targetCnt;  //ã‚«ãƒƒãƒ—ã‚±ãƒ¼ã‚­ã®æ•°ã‚’è¨˜éŒ²
 
     void Start()
     {
-        //ƒJƒbƒvƒP[ƒL‚ÌoŒ»êŠiƒIƒuƒWƒFƒNƒgj‚ğæ“¾
+        //ã‚«ãƒƒãƒ—ã‚±ãƒ¼ã‚­ã®å‡ºç¾å ´æ‰€ï¼ˆã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆï¼‰ã‚’å–å¾—
         GetTargetPos();
 
-        //¶¬êŠ‚ªd‚È‚ç‚È‚¢‚æ‚¤‚É‚·‚é
+        //ç”Ÿæˆå ´æ‰€ãŒé‡ãªã‚‰ãªã„ã‚ˆã†ã«ã™ã‚‹
         isOccupied = new List<bool>();
 
-        //¶¬êŠ‚ÉŠù‚ÉƒJƒbƒvƒP[ƒL‚ª‚ ‚é‚©‚Ì”»’è
+        //ç”Ÿæˆå ´æ‰€ã«æ—¢ã«ã‚«ãƒƒãƒ—ã‚±ãƒ¼ã‚­ãŒã‚ã‚‹ã‹ã®åˆ¤å®š
         for (int i = 0; i < targets_pos.Count; i++)
         {
-            isOccupied.Add(false);  //Å‰‚Í‚·‚×‚ÄFalse‚ğ“o˜^
+            isOccupied.Add(false);  //æœ€åˆã¯ã™ã¹ã¦Falseã‚’ç™»éŒ²
         }
 
 
-        //ƒ‰ƒ“ƒ_ƒ€‚É5‚Â¶¬
+        //ãƒ©ãƒ³ãƒ€ãƒ ã«5ã¤ç”Ÿæˆ
         for (int i = 0; i < 5; i++)
         {
-            //ƒJƒbƒvƒP[ƒL‚ğ¶¬
+            //ã‚«ãƒƒãƒ—ã‚±ãƒ¼ã‚­ã‚’ç”Ÿæˆ
             ComeOutTarget();
-
-            //ƒJƒbƒvƒP[ƒL‚Ì”‚ğ‹L˜^
-            targetCnt++;
-            Debug.Log("ƒJƒbƒvƒP[ƒL‚Ì”F" + targetCnt);
         }
         
-
+        Debug.Log("ã‚«ãƒƒãƒ—ã‚±ãƒ¼ã‚­ã®æ•°ï¼š" + targetCnt);
+        
         targetCnt = 0;
     }
 
@@ -50,7 +47,7 @@ public class CupCakeGimmick : MonoBehaviour
     {
         targets_pos = GameObject.FindGameObjectsWithTag("TargetPos").ToList();
 
-        //oŒ»êŠŠm”F—p
+        //å‡ºç¾å ´æ‰€ç¢ºèªç”¨
         //foreach(GameObject target in targets_pos)
         //{
         //    Vector3 potition = target.transform.position;
@@ -61,27 +58,28 @@ public class CupCakeGimmick : MonoBehaviour
 
     void ComeOutTarget()
     {
-        // ‹ó‚«‚ÌêŠ‚ğƒŠƒXƒgƒAƒbƒv
+        // ç©ºãã®å ´æ‰€ã‚’ãƒªã‚¹ãƒˆã‚¢ãƒƒãƒ—
         List<int> emptyIndices = new List<int>();
         for (int i = 0; i < isOccupied.Count; i++)
         {
             if (!isOccupied[i]) emptyIndices.Add(i);
         }
 
-        // ‹ó‚¢‚Ä‚éêŠ‚ª‚È‚¢‚È‚çreturn
+        // ç©ºã„ã¦ã‚‹å ´æ‰€ãŒãªã„ãªã‚‰return
         if (emptyIndices.Count == 0) return;
 
-        // ‹ó‚¢‚Ä‚éêŠ‚©‚çƒ‰ƒ“ƒ_ƒ€‚Å‘I‚Ô
+        // ç©ºã„ã¦ã‚‹å ´æ‰€ã‹ã‚‰ãƒ©ãƒ³ãƒ€ãƒ ã§é¸ã¶
         int randomIndex = Random.Range(0, emptyIndices.Count);
         int selectedPos = emptyIndices[randomIndex];
 
-        // ¶¬
+        // ç”Ÿæˆ
         GameObject target = targets_pos[selectedPos];
         Vector3 position = target.transform.position;
         position.y += 0.25f;
         Instantiate(CupCakeA, position, Quaternion.identity);
+        targetCnt++;
 
-        // g—p’†ƒ}[ƒN
+        // ä½¿ç”¨ä¸­ãƒãƒ¼ã‚¯
         isOccupied[selectedPos] = true;
     }
 }
