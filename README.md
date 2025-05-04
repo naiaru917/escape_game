@@ -32,4 +32,5 @@
 - ResetButton...ギミックをリセットする処理（teaCupGimmick用）
 - OutlineController...画面中央にあるアクション可能なオブジェクトにアウトラインを追加
 - Gate...次のステージへ行くためのゲート。接触することで移動可能。
+- BookController...本をクリックした際に表示されるCanvasのUI関連処理
 
