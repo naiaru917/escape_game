@@ -6,11 +6,11 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    [Header("ƒvƒŒƒCƒ„[Prefab")]
+    [Header("ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼Prefab")]
     public GameObject brotherPrefab;
     public GameObject sisterPrefab;
 
-    [Header("ƒV[ƒ“İ’è")]
+    [Header("ã‚·ãƒ¼ãƒ³è¨­å®š")]
     public string realWorldScene = "Stage4";
     public List<string> bookWorldScenes = new List<string> { "Stage1", "Stage2", "Stage3" };
     public static int currentBookWorldIndex = 0;
@@ -20,17 +20,11 @@ public class GameManager : MonoBehaviour
     //private Dictionary<string, List<string>> playerItems = new Dictionary<string, List<string>>();
     public static bool isInBookWorld = false;
 
-    [Header("UIİ’è")]
+    [Header("UIè¨­å®š")]
     public GameObject canvasPrefab;
     private GameObject canvasInstance;
     private RectTransform mapImage;
     private RectTransform playerImage;
-
-    [Header("ƒ[ƒ‹ƒh”ÍˆÍİ’è")]
-    [SerializeField] private Vector2 worldCenter = Vector2.zero;
-    [SerializeField] private Vector2 worldSize = new Vector2(100, 100);
-
-
 
     void Awake()
     {
@@ -39,7 +33,6 @@ public class GameManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
             InitializePlayerStates();
-            CreateCanvasInstance();  // ƒLƒƒƒ“ƒoƒX‚Ì¶¬
         }
         else
         {
@@ -47,13 +40,13 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // ‰‰ñƒvƒŒƒCƒ„[¶¬
+        // åˆå›ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ç”Ÿæˆ
         SpawnPlayer(isInBookWorld);
     }
 
     void InitializePlayerStates()
     {
-        // ˆÊ’u‚Ì‰Šú‰»
+        // ä½ç½®ã®åˆæœŸåŒ–
         playerPositions["BookWorld"] = new Vector3(0, 2f, 0);
 
         foreach(string scene in bookWorldScenes)
@@ -62,7 +55,7 @@ public class GameManager : MonoBehaviour
         }
         
 
-        // ƒAƒCƒeƒ€‚Ì‰Šú‰»
+        // ã‚¢ã‚¤ãƒ†ãƒ ã®åˆæœŸåŒ–
         //playerItems["BookWorld"] = new List<string>();
         //foreach (string scene in bookWorldScenes)
         //{
@@ -72,7 +65,7 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        // VƒL[‚Å‹“_Ø‚è‘Ö‚¦
+        // Vã‚­ãƒ¼ã§è¦–ç‚¹åˆ‡ã‚Šæ›¿ãˆ
         if (Input.GetKeyDown(KeyCode.V))
         {
             SwitchWorld();
@@ -81,14 +74,14 @@ public class GameManager : MonoBehaviour
 
     void SpawnPlayer(bool inBookWorld)
     {
-        // Œ»İ‚ÌƒvƒŒƒCƒ„[‚ğíœ
+        // ç¾åœ¨ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å‰Šé™¤
         if (currentPlayer != null)
         {
             SavePlayerState();
             Destroy(currentPlayer);
         }
 
-        // ƒvƒŒƒCƒ„[¶¬
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ç”Ÿæˆ
         if (inBookWorld)
         {
             string currentScene = bookWorldScenes[currentBookWorldIndex];
@@ -100,32 +93,32 @@ public class GameManager : MonoBehaviour
             currentPlayer = Instantiate(sisterPrefab, GetPlayerPosition(realWorldScene), Quaternion.identity);
         }
 
-        // ƒAƒCƒeƒ€•œŒ³i•K—v‚É‰‚¶‚Äj
+        // ã‚¢ã‚¤ãƒ†ãƒ å¾©å…ƒï¼ˆå¿…è¦ã«å¿œã˜ã¦ï¼‰
         //RestorePlayerItems();
     }
 
     void SwitchWorld()
     {
-        // ƒV[ƒ“Ø‚è‘Ö‚¦
+        // ã‚·ãƒ¼ãƒ³åˆ‡ã‚Šæ›¿ãˆ
         SavePlayerState();
 
         if (isInBookWorld)
         {
-            //–{‚Ì¢ŠE‚©‚çŒ»À¢ŠE‚Ö
+            //æœ¬ã®ä¸–ç•Œã‹ã‚‰ç¾å®Ÿä¸–ç•Œã¸
             isInBookWorld = false;
             SceneManager.LoadScene("Stage4");
             Debug.Log(playerPositions[bookWorldScenes[currentBookWorldIndex]]);
         }
         else
         {
-            //Œ»À¢ŠE‚©‚ç–{‚Ì¢ŠE‚Ö
+            //ç¾å®Ÿä¸–ç•Œã‹ã‚‰æœ¬ã®ä¸–ç•Œã¸
             isInBookWorld = true;
             string nextScene = bookWorldScenes[currentBookWorldIndex];
             SceneManager.LoadScene(nextScene);
         }
 
         PlayerController.isPlayerMove = true;
-        // ƒJ[ƒ\ƒ‹‚ğ”ñ•\¦•ŒÅ’è
+        // ã‚«ãƒ¼ã‚½ãƒ«ã‚’éè¡¨ç¤ºï¼†å›ºå®š
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
@@ -139,7 +132,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("–{‚Ì¢ŠE‚ğƒNƒŠƒA");
+            Debug.Log("æœ¬ã®ä¸–ç•Œã‚’ã‚¯ãƒªã‚¢");
         }
     }
 
@@ -155,49 +148,22 @@ public class GameManager : MonoBehaviour
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // ƒV[ƒ“‚ª“Ç‚İ‚Ü‚ê‚½‚çƒvƒŒƒCƒ„[‚ğƒXƒ|[ƒ“
+        // ã‚·ãƒ¼ãƒ³ãŒèª­ã¿è¾¼ã¾ã‚ŒãŸã‚‰ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’ã‚¹ãƒãƒ¼ãƒ³
         SpawnPlayer(isInBookWorld);
 
-        // ƒ}ƒbƒv‚ÆƒvƒŒƒCƒ„[‰æ‘œ‚ğÄæ“¾
+        // ãƒãƒƒãƒ—ã¨ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ç”»åƒã‚’å†å–å¾—
         ReattachCanvas();
 
-        // ƒvƒŒƒCƒ„[ˆÊ’u‚Ì”½‰f
+        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ä½ç½®ã®åæ˜ 
         string currentScene = isInBookWorld ? bookWorldScenes[currentBookWorldIndex] : realWorldScene;
         UpdatePlayerPosition(GetPlayerPosition(currentScene));
     }
-
-    void CreateCanvasInstance()
-    {
-        if (canvasInstance == null)
-        {
-            canvasInstance = Instantiate(canvasPrefab);
-            DontDestroyOnLoad(canvasInstance);
-
-            // q—v‘f‚ğæ“¾
-            mapImage = canvasInstance.transform.Find("MapImage")?.GetComponent<RectTransform>();
-            playerImage = canvasInstance.transform.Find("PlayerImage")?.GetComponent<RectTransform>();
-
-            if (mapImage == null || playerImage == null)
-            {
-                Debug.LogWarning("MapImage‚Ü‚½‚ÍPlayerImage‚ªƒLƒƒƒ“ƒoƒX‚ÉŠÜ‚Ü‚ê‚Ä‚¢‚Ü‚¹‚ñB");
-            }
-        }
-    }
-
-    void ReattachCanvas()
-    {
-        if (canvasInstance == null)
-        {
-            CreateCanvasInstance();
-        }
-    }
-
 
     void SavePlayerState()
     {
         string worldKey = isInBookWorld ? bookWorldScenes[currentBookWorldIndex] : realWorldScene;
         playerPositions[worldKey] = currentPlayer.transform.position;
-        // ‚±‚±‚ÅƒAƒCƒeƒ€‚à•Û‘¶iƒAƒCƒeƒ€æ“¾ˆ—‚Å’Ç‰Áj
+        // ã“ã“ã§ã‚¢ã‚¤ãƒ†ãƒ ã‚‚ä¿å­˜ï¼ˆã‚¢ã‚¤ãƒ†ãƒ å–å¾—å‡¦ç†ã§è¿½åŠ ï¼‰
     }
 
     Vector3 GetPlayerPosition(string worldKey)
@@ -205,7 +171,7 @@ public class GameManager : MonoBehaviour
         if (playerPositions.ContainsKey(worldKey))
             return playerPositions[worldKey];
 
-        // ‰ŠúˆÊ’u
+        // åˆæœŸä½ç½®
         return new Vector3(0, 2f, 0);
     }
 
@@ -214,7 +180,7 @@ public class GameManager : MonoBehaviour
     //    string worldKey = isInBookWorld ? bookWorldScenes[currentBookWorldIndex] : realWorldScene;
     //List<string> items = playerItems[worldKey];
 
-    //// ƒAƒCƒeƒ€•œŒ³i•\¦‚â‘•”õ‚È‚Ç‚É‰‚¶‚ÄÀ‘•j
+    //// ã‚¢ã‚¤ãƒ†ãƒ å¾©å…ƒï¼ˆè¡¨ç¤ºã‚„è£…å‚™ãªã©ã«å¿œã˜ã¦å®Ÿè£…ï¼‰
     //foreach (string item in items)
     //{
     //    Debug.Log($"Item Restored: {item}");
@@ -233,28 +199,4 @@ public class GameManager : MonoBehaviour
     //    string worldKey = isInBookWorld ? bookWorldScenes[currentBookWorldIndex] : realWorldScene;
     //    return playerItems[worldKey];
     //}
-
-    
-    public void UpdatePlayerPosition(Vector3 playerWorldPos)
-    {
-        if (mapImage == null || playerImage == null) return;
-
-        // ƒ}ƒbƒv‚Ì’†SˆÊ’u‚ÆƒTƒCƒY
-        Vector2 mapCenter = mapImage.rect.size / 2f;
-        Vector2 mapSize = mapImage.rect.size;
-
-        // ƒ[ƒ‹ƒhÀ•W‚©‚ç‘Š‘ÎÀ•W‚É•ÏŠ·
-        float relativeX = (playerWorldPos.x - worldCenter.x) / (worldSize.x / 2f);
-        float relativeY = (playerWorldPos.z - worldCenter.y) / (worldSize.y / 2f);
-
-        // ƒ}ƒbƒvã‚ÌÀ•W‚É•ÏŠ·
-        float posX = relativeX * (mapSize.x / 2f);
-        float posY = relativeY * (mapSize.y / 2f);
-
-        // ƒ}ƒbƒv‰æ‘œ‚Ìƒ[ƒJƒ‹À•W‚ÉŠî‚Ã‚¢‚ÄˆÊ’u‚ğİ’è
-        Vector2 mapCenterOffset = (Vector2)mapImage.localPosition;
-        playerImage.anchoredPosition = mapCenterOffset + new Vector2(posX, posY);
-
-    }
-
 }
