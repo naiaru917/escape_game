@@ -6,6 +6,7 @@ public class BookController : MonoBehaviour, IPointerDownHandler, IDragHandler, 
     private RectTransform rectTransform;      // ドラックするテキストのRectTransform
     private Canvas canvas;                    // スケール補正用のCanvas
     public RectTransform keyZoneRect;         // テキストを配置したい位置のRectTransform
+    public static bool flg = true;
 
     private void Awake()
     {
