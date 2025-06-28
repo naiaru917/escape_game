@@ -7,6 +7,7 @@
 - PlayerController.cs...プレイヤーの位置保存・復元、ポーズ画面等
 - Gate.cs...次のステージへ行くためのゲート。接触することで移動可能。
 - ItemManager.cs...アイテムの取得処理
+- ItemUsePoint.cs...アイテムの使用可能な場所を設定
 - BookController.cs...本をクリックした際に表示されるCanvasのUI関連処理
 
 ## Player関連
