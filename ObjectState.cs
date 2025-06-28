@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 [CreateAssetMenu(fileName = "ObjectState", menuName = "ScriptableObjects/ObjectState")]
 public class ObjectState : ScriptableObject
@@ -7,22 +8,55 @@ public class ObjectState : ScriptableObject
     [System.Serializable]
     public class ObjectData
     {
-        public string objectName;
-        public Vector3 position;
-        public Quaternion rotation;
-        public bool initialPositionSaved;
+        public string objectName;           //オブジェクト名
+        public int objectID;                //同じオブジェクト名のプレハブを生成したときに判別するためのID
+        public bool isPrefab;               //プレハブから生成されたオブジェクトか
+        public WorldName worldName;         //どのシーンに存在しているオブジェクトか
+        public Vector3 position;            //オブジェクトの位置情報
+        public Quaternion rotation;         //オブジェクトの回転情報
+        public bool initialPositionSaved;   //初期位置を保存したか（初回のみ初期位置を保存）
     }
 
-    public List<ObjectData> objectDataList = new List<ObjectData>();
+    public List<ObjectData> objectDataList = new List<ObjectData>();    //データをリスト形式で登録
 
-    public void SaveState(string objectName, Vector3 position, Quaternion rotation)
+    public void SaveState(string objectName, int objectID, bool isPrefab, WorldName worldName, Vector3 position, Quaternion rotation)
     {
-        var data = objectDataList.Find(d => d.objectName == objectName);
+        // ID重複チェック処理（isPrefabがtrueのときのみ）
+        if (isPrefab)
+        {
+            bool idConflict = objectDataList.Any(d =>
+                d.isPrefab &&
+                d.objectName == objectName &&
+                d.objectID == objectID);
+
+            if (idConflict)
+            {
+                // 被ってないIDを探して上書き
+                int newId = objectID;
+                while (objectDataList.Any(d =>
+                    d.isPrefab &&
+                    d.objectName == objectName &&
+                    d.objectID == newId))
+                {
+                    newId++;
+                }
+
+                objectID = newId;
+            }
+        }
+
+        //オブジェクトのデータを保存
+        var data = objectDataList.Find(d => d.objectName == objectName && d.objectID == objectID);
+
         if (data == null)
         {
+            //データが空の場合
             data = new ObjectData
             {
                 objectName = objectName,
+                objectID = objectID,
+                isPrefab = isPrefab,
+                worldName = worldName,
                 position = position,
                 rotation = rotation,
                 initialPositionSaved = true
@@ -31,22 +65,21 @@ public class ObjectState : ScriptableObject
         }
         else
         {
+            //既にデータがある場合（位置・回転情報を更新）
             data.position = position;
             data.rotation = rotation;
             data.initialPositionSaved = true;
         }
 
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         UnityEditor.EditorUtility.SetDirty(this);
         UnityEditor.AssetDatabase.SaveAssets();
-        #endif
-
-        //Debug.Log($"[{objectName}]�̏�Ԃ�ۑ����܂���: {position}");
+#endif
     }
 
-    public bool TryGetState(string objectName, out Vector3 position, out Quaternion rotation)
+    public bool TryGetState(string objectName, int objectID, out Vector3 position, out Quaternion rotation)
     {
-        var data = objectDataList.Find(d => d.objectName == objectName);
+        var data = objectDataList.Find(d => d.objectName == objectName && d.objectID == objectID);
         if (data != null)
         {
             position = data.position;
@@ -59,15 +92,15 @@ public class ObjectState : ScriptableObject
         return false;
     }
 
-    public bool HasInitialPosition(string objectName)
+    public bool HasInitialPosition(string objectName, int objectID)
     {
-        var data = objectDataList.Find(d => d.objectName == objectName);
+        var data = objectDataList.Find(d => d.objectName == objectName && d.objectID == objectID);
         return data != null && data.initialPositionSaved;
     }
 
     public void ResetAllData()
     {
-        //Debug.Log("ObjectState�̃f�[�^�����Z�b�g���܂�");
+        //Debug.Log("ObjectStateのデータをリセットします");
         objectDataList.Clear();
     }
 }
