@@ -6,6 +6,7 @@
 ## ゲーム全体
 - PlayerController.cs...プレイヤーの位置保存・復元、ポーズ画面等
 - Gate.cs...次のステージへ行くためのゲート。接触することで移動可能。
+- OutlineController.cs...オブジェクトにアウトラインを生成する処理
 - ItemManager.cs...アイテムの取得処理
 - ItemUsePoint.cs...アイテムの使用可能な場所を設定
 - BookController.cs...本をクリックした際に表示されるCanvasのUI関連処理
@@ -13,7 +14,6 @@
 ## Player関連
 - PlayerController.cs...プレイヤーの移動処理
 - camera.cs...一人称（FPS）視点のカメラ処理
-- setting.cs...現在のステージ位置などの情報を記録
 
 ## MiniGame
 ### teaCupGimmick.cs...ティーカップをモチーフにした謎解き用ミニゲーム
