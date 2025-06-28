@@ -3,19 +3,23 @@ using UnityEngine;
 public class ObjectStateManager : MonoBehaviour
 {
     public ObjectState objectState;
-    public string objectName;  // ƒIƒuƒWƒFƒNƒg‚Ì¯•Ê–¼
+    public string objectName;
+    public int objectID;
+    public bool isPrefab;
+    public WorldName worldName;
+
 
     private void Start()
     {
-        // ƒQ[ƒ€ŠJn‚Éƒf[ƒ^‚ğƒŠƒZƒbƒgi‰‰ñ‚Ì‚İj
+        // ã‚²ãƒ¼ãƒ é–‹å§‹æ™‚ã«ãƒ‡ãƒ¼ã‚¿ã‚’ãƒªã‚»ãƒƒãƒˆï¼ˆåˆå›ã®ã¿ï¼‰
         if (GameManager.isFirstRunCup)
         {
             objectState.ResetAllData();
             GameManager.isFirstRunCup = false;
         }
 
-        // ‰ŠúˆÊ’u‚ª•Û‘¶‚³‚ê‚Ä‚¢‚ê‚Î•œŒ³
-        if (objectState.HasInitialPosition(objectName))
+        // åˆæœŸä½ç½®ãŒä¿å­˜ã•ã‚Œã¦ã„ã‚Œã°å¾©å…ƒ
+        if (objectState.HasInitialPosition(objectName, objectID))
         {
             RestorePosition();
         }
@@ -23,9 +27,9 @@ public class ObjectStateManager : MonoBehaviour
 
     private void Update()
     {
-        if(GameManager.isSceneMove==true)
+        if (GameManager.isSceneMove == true)
         {
-            // –{‚Ì¢ŠE‚É‚¢‚éŠÔAVƒL[‚ÅˆÊ’u‚ğ•Û‘¶
+            // æœ¬ã®ä¸–ç•Œã«ã„ã‚‹é–“ã€Vã‚­ãƒ¼ã§ä½ç½®ã‚’ä¿å­˜
             if (GameManager.isInBookWorld && Input.GetKeyDown(KeyCode.V))
             {
                 SaveCurrentPosition();
@@ -35,21 +39,28 @@ public class ObjectStateManager : MonoBehaviour
 
     private void SaveCurrentPosition()
     {
-        objectState.SaveState(objectName, transform.position, transform.rotation);
-        //Debug.Log($"[{objectName}] ‚ÌˆÊ’u‚ğ•Û‘¶: {transform.position}");
+        // è‡ªå‹•æ¡ç•ªå‡¦ç†ï¼ˆisPrefabæ™‚ï¼‰
+        if (isPrefab && objectID <= 0)
+        {
+            objectID = 1;
+            while (objectState.objectDataList.Exists(d =>
+                d.isPrefab &&
+                d.objectName == objectName &&
+                d.objectID == objectID))
+            {
+                objectID++;
+            }
+        }
+
+        objectState.SaveState(objectName, objectID, isPrefab, worldName, transform.position, transform.rotation);
     }
 
     private void RestorePosition()
     {
-        if (objectState.TryGetState(objectName, out Vector3 savedPosition, out Quaternion savedRotation))
+        if (objectState.TryGetState(objectName, objectID, out Vector3 savedPosition, out Quaternion savedRotation))
         {
-            transform.position = savedPosition;
-            transform.rotation = savedRotation;
-            //Debug.Log($"[{objectName}] ‚ÌˆÊ’u‚ğ•œŒ³: {transform.position}");
-        }
-        else
-        {
-            //Debug.LogWarning($"[{objectName}] ‚Ì•Û‘¶‚³‚ê‚½ˆÊ’u‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ");
+            transform.position = savedPosition;     //ä½ç½®ã®åæ˜ 
+            transform.rotation = savedRotation;     //å›è»¢ã®åæ˜ 
         }
     }
 }
