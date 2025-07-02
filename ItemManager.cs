@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public class ItemManager : MonoBehaviour
 {
     private GameObject hitBook, hitItem;
-    public Outline hitOutlineCS;    //‘I‘ğ‚µ‚½ƒIƒuƒWƒFƒNƒg‚É•t—^‚µ‚½OutlineƒXƒNƒŠƒvƒg
+    public Outline hitOutlineCS;    //é¸æŠã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«ä»˜ä¸ã—ãŸOutlineã‚¹ã‚¯ãƒªãƒ—ãƒˆ
     public Text EventTxt;
     public GameObject BookCanvas;
     public static bool canvasAvtive;
@@ -36,7 +36,7 @@ public class ItemManager : MonoBehaviour
         }
         
 
-        // MainCamera ‚Ìq‚©‚ç "HeldItemCamera" ‚ğ’T‚·
+        // MainCamera ã®å­ã‹ã‚‰ "HeldItemCamera" ã‚’æ¢ã™
         heldItemCamera = Camera.main.GetComponentInChildren<Camera>(true);
 
     }
@@ -44,15 +44,15 @@ public class ItemManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // ‰æ–Ê’†‰›‚ÌƒXƒNƒŠ[ƒ“À•W‚ğæ“¾
+        // ç”»é¢ä¸­å¤®ã®ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã‚’å–å¾—
         Vector3 centerScreenPosition = new Vector3(Screen.width / 2, Screen.height / 2, 0);
 
-        // ‰æ–Ê’†‰›‚ÌƒXƒNƒŠ[ƒ“À•W‚ğƒ[ƒ‹ƒhÀ•W‚É•ÏŠ·
+        // ç”»é¢ä¸­å¤®ã®ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã‚’ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™ã«å¤‰æ›
         Ray ray = Camera.main.ScreenPointToRay(centerScreenPosition);
         RaycastHit hit;
 
 
-        // ‘O‰ñ‚Ì hitBook ‚Ì Outline ‚ğ–³Œø‰»i‘O‰ñ‚ÌƒIƒuƒWƒFƒNƒg‚©‚ç Outline ‚ğ–³Œø‰»j
+        // å‰å›ã® hitBook ã® Outline ã‚’ç„¡åŠ¹åŒ–ï¼ˆå‰å›ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‹ã‚‰ Outline ã‚’ç„¡åŠ¹åŒ–ï¼‰
         if (hitBook != null)
         {
             if (hitOutlineCS != null)
@@ -60,20 +60,24 @@ public class ItemManager : MonoBehaviour
                 hitOutlineCS.enabled = false;
             }
 
-            hitBook = null; // hitBook ‚ğ‹ó‚É‚·‚é
+            hitBook = null; // hitBook ã‚’ç©ºã«ã™ã‚‹
+            EventTxt.enabled = false;
+        }
+        if(hitItem != null)
+        {
             EventTxt.enabled = false;
         }
 
-        // ƒŒƒC‚ªƒIƒuƒWƒFƒNƒg‚É“–‚½‚Á‚½ê‡‚Ì‚İˆ—‚ğÀs
+        // ãƒ¬ã‚¤ãŒã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«å½“ãŸã£ãŸå ´åˆã®ã¿å‡¦ç†ã‚’å®Ÿè¡Œ
         if (Physics.Raycast(ray, out hit))
         {
-            // hit.collider ‚ª null ‚Å‚È‚¢‚©ƒ`ƒFƒbƒN
+            // hit.collider ãŒ null ã§ãªã„ã‹ãƒã‚§ãƒƒã‚¯
             if (hit.collider != null && hit.collider.CompareTag("Book"))
             {
-                // ƒNƒŠƒbƒN‚µ‚½ƒJƒbƒv‚ÌGameObject‚ğ•Û‘¶
+                // ã‚¯ãƒªãƒƒã‚¯ã—ãŸã‚«ãƒƒãƒ—ã®GameObjectã‚’ä¿å­˜
                 hitBook = hit.collider.gameObject;
-                //ƒCƒxƒ“ƒgƒeƒLƒXƒg‚ğ•\¦
-                EventTxt.text = "ƒNƒŠƒbƒN‚Å–{‚ğŠJ‚­";
+                //ã‚¤ãƒ™ãƒ³ãƒˆãƒ†ã‚­ã‚¹ãƒˆã‚’è¡¨ç¤º
+                EventTxt.text = "ã‚¯ãƒªãƒƒã‚¯ã§æœ¬ã‚’é–‹ã";
                 EventTxt.enabled = true;
                 if (Input.GetMouseButtonDown(0))
                 {
@@ -81,12 +85,12 @@ public class ItemManager : MonoBehaviour
                     canvasAvtive = true;
                     PlayerController.isPlayerMove = false;
 
-                    // ƒJ[ƒ\ƒ‹‚ğ•\¦•ŒÅ’è‚ğ‰ğœ
+                    // ã‚«ãƒ¼ã‚½ãƒ«ã‚’è¡¨ç¤ºï¼†å›ºå®šã‚’è§£é™¤
                     Cursor.lockState = CursorLockMode.None;
                     Cursor.visible = true;
                 }
 
-                //ƒIƒuƒWƒFƒNƒg‚ÌƒAƒEƒgƒ‰ƒCƒ“ƒXƒNƒŠƒvƒg‚ğæ“¾
+                //ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ã‚¢ã‚¦ãƒˆãƒ©ã‚¤ãƒ³ã‚¹ã‚¯ãƒªãƒ—ãƒˆã‚’å–å¾—
                 hitOutlineCS = hitBook.GetComponent<Outline>();
                 hitOutlineCS.enabled = true;
             }
@@ -95,33 +99,33 @@ public class ItemManager : MonoBehaviour
             {
                 hitItem = hit.collider.gameObject;
 
-                // ƒCƒxƒ“ƒgƒeƒLƒXƒg‚ğ•\¦
-                EventTxt.text = "ƒNƒŠƒbƒN‚ÅE‚¤";
+                // ã‚¤ãƒ™ãƒ³ãƒˆãƒ†ã‚­ã‚¹ãƒˆã‚’è¡¨ç¤º
+                EventTxt.text = "ã‚¯ãƒªãƒƒã‚¯ã§æ‹¾ã†";
                 EventTxt.enabled = true;
 
                 if (Input.GetMouseButtonDown(0))
                 {
-                    // ƒAƒCƒeƒ€‚ğƒCƒ“ƒXƒ^ƒ“ƒX‰»
+                    // ã‚¢ã‚¤ãƒ†ãƒ ã‚’ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹åŒ–
                     pickedItem = Instantiate(hitItem);
 
-                    // Layer ‚ğ HeldItemLayer ‚É•ÏX
+                    // Layer ã‚’ HeldItemLayer ã«å¤‰æ›´
                     SetLayerRecursively(pickedItem, LayerMask.NameToLayer("HeldItemLayer"));
 
-                    // ƒJƒƒ‰‚Ìq‚É‚µ‚Äí‚É•\¦‚³‚ê‚é‚æ‚¤‚É
-                    pickedItem.transform.SetParent(heldItemCamera.transform); // ©•Ï”’Ç‰Á‚µ‚Ä‚¨‚­
-                    pickedItem.transform.localPosition = new Vector3(0.7f, -0.4f, 1.5f);
+                    // ã‚«ãƒ¡ãƒ©ã®å­ã«ã—ã¦å¸¸ã«è¡¨ç¤ºã•ã‚Œã‚‹ã‚ˆã†ã«
+                    pickedItem.transform.SetParent(heldItemCamera.transform);
+                    pickedItem.transform.localPosition = new Vector3(1f, -0.4f, 1.5f);
                     pickedItem.transform.localRotation = Quaternion.identity;
                     pickedItem.transform.localScale = Vector3.one * 0.4f;
 
-                    // ƒRƒ‰ƒCƒ_[EƒŠƒWƒbƒhƒ{ƒfƒB‚ğ–³Œø‰»i•¨—Š±Â–h~j
+                    // ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ãƒ»ãƒªã‚¸ãƒƒãƒ‰ãƒœãƒ‡ã‚£ã‚’ç„¡åŠ¹åŒ–ï¼ˆç‰©ç†å¹²æ¸‰é˜²æ­¢ï¼‰
                     Collider col = pickedItem.GetComponent<Collider>();
                     if (col != null) col.enabled = false;
 
                     Rigidbody rb = pickedItem.GetComponent<Rigidbody>();
                     if (rb != null) rb.isKinematic = true;
 
-                    Debug.Log("ƒAƒCƒeƒ€‚ğŠl“¾: " + hitItem.name);
-                    hitItem.SetActive(false); // Œ³‚ÌƒIƒuƒWƒFƒNƒg‚ğ”ñ•\¦
+                    Debug.Log("ã‚¢ã‚¤ãƒ†ãƒ ã‚’ç²å¾—: " + hitItem.name);
+                    hitItem.SetActive(false); // å…ƒã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’éè¡¨ç¤º
                     ItemUsePoint.SetActive(true);
                 }
             }
@@ -156,7 +160,7 @@ public class ItemManager : MonoBehaviour
         canvasAvtive = false;
         PlayerController.isPlayerMove = true;
 
-        // ƒJ[ƒ\ƒ‹‚ğ”ñ•\¦•ŒÅ’è
+        // ã‚«ãƒ¼ã‚½ãƒ«ã‚’éè¡¨ç¤ºï¼†å›ºå®š
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
