@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
+using System.Linq;
 
 public class GameManager : MonoBehaviour
 {
@@ -9,48 +10,35 @@ public class GameManager : MonoBehaviour
     [Header("プレイヤーPrefab")]
     public GameObject brotherPrefab;    //本の世界（兄視点）のプレイヤー
     public GameObject sisterPrefab;     //現実世界（妹視点）のプレイヤー
+    public Transform sisterFootPoint;         //妹の地面の座標
 
     [Header("シーン設定")]
-    public string realWorldScene = "Stage4";    //現実世界のシーン
-    public List<string> bookWorldScenes = new List<string> { "Stage1", "Stage2", "Stage3" };    //本世界のシーン
+    public string realWorldScene = "RealWorld";    //現実世界のシーン
+    public List<string> bookWorldScenes = new List<string> { "Stage1", "Stage2", "Stage3"};    //本世界のシーン
     public static int currentBookWorldIndex = 0;    //何番目の本世界にいるか
 
     private GameObject currentPlayer;
-    private Dictionary<string, Vector3> playerPositions = new Dictionary<string, Vector3>();    //プレイヤーの位置
-    private Dictionary<string, Quaternion> playerRotations = new Dictionary<string, Quaternion>();    //プレイヤーの回転
-    public static bool isInBookWorld = false;   //現在、本世界にいるか
-    public static bool isFirstRunCup = true;
-    public static bool isFirstRunIce = true;
+    public static Dictionary<string, Vector3> playerPositions = new Dictionary<string, Vector3>();    //プレイヤーの位置
+    private Dictionary<string, float> playerRotations_y = new Dictionary<string, float>();    //プレイヤーのY回転（上下）
+    private Dictionary<string, float> playerRotations_x = new Dictionary<string, float>();    //プレイヤーのX回転（左右）
 
-    [Header("UI設定")]
-    private RectTransform mapImage, playerImage;
-    private List<RectTransform> imageList = new List<RectTransform>();
-    private List<string> imageNames = new List<string> { "CupA", "CupB", "CupC", "CupD" };
+    private Dictionary<string, (string itemName, Vector3 scale)> heldItems = new Dictionary<string, (string, Vector3)>();   // 所持アイテム
 
-    [Header("ワールド範囲設定")]
-    [SerializeField] private Vector2 worldCenter = Vector2.zero;
-
-    [Header("ワールド範囲設定")]
-    public GameObject PauseCanvas;
-    private GameObject PauseCanvasInstance;
-    private bool isPaused = false;
-
-    //カップの位置取得
+    // オブジェクトの位置情報
     [SerializeField] private ObjectState objectState;
-    private Dictionary<string, Vector3> CupPositions = new Dictionary<string, Vector3>();
 
-    //本世界の部屋サイズ
-    [SerializeField]
-    private Dictionary<string, Vector2> roomSizes = new Dictionary<string, Vector2>()
-    {
-        { "Stage1", new Vector2(14, 14) },
-        { "Stage2", new Vector2(14, 14) },
-        { "Stage3", new Vector2(14, 14) }
-    };
-
+    public static bool isInBookWorld = false;   //現在、本世界にいるか
     public static bool isGate = false;    //ゲートが出現しているか
     public static bool isSceneMove = true;  //シーン移動が可能か（ほかの処理中じゃないか）
+    public static bool isPaused = false;    //ポーズ画面を開いているか
+    public Transform heldItemSlot;
 
+    public GameObject testPrefab;
+    public static bool isLastStage = false;
+    public static bool isHiding = false;
+
+    [SerializeField] private GameObject gameOverCanvasPrefab;
+    private GameObject spawnedGameOverCanvas;
 
     void Awake()
     {
@@ -58,6 +46,7 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            objectState.ResetAllData();      // ObjectStateのデータをリセット
             InitializePlayerStates();
         }
         else
@@ -73,23 +62,14 @@ public class GameManager : MonoBehaviour
     {
         // 位置の初期化
         playerPositions[realWorldScene] = new Vector3(0, 2f, 0);    //現実世界の初期位置
-        playerRotations[realWorldScene] = new Quaternion();         //現実世界の初期回転方向
+        playerRotations_y[realWorldScene] = 0f;         //現実世界の初期回転方向
+        playerRotations_x[realWorldScene] = 0f;
 
         foreach (string scene in bookWorldScenes)
         {
             playerPositions[scene] = new Vector3(0, 2f, 0);     //本世界の初期位置
-            playerRotations[scene] = new Quaternion();          //本世界の初期回転方向
-        }
-    }
-
-    void InitializeDictionary()
-    {
-        foreach (var data in objectState.objectDataList)
-        {
-            if (data.initialPositionSaved)
-            {
-                CupPositions[data.objectName] = data.position;
-            }
+            playerRotations_y[scene] = 0;          //本世界の初期回転方向
+            playerRotations_x[scene] = 0;
         }
     }
 
@@ -111,10 +91,10 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.M))
+        // WitchManagerに妹の位置を共有
+        if (!isInBookWorld && currentPlayer != null)
         {
-            //ポーズ画面を表示
-            TogglePauseMenu();
+            WitchManager.Instance.UpdateSisterPosition(currentPlayer.transform.position);
         }
     }
 
@@ -132,16 +112,67 @@ public class GameManager : MonoBehaviour
         {
             string currentScene = bookWorldScenes[currentBookWorldIndex];
 
-            currentPlayer = Instantiate(brotherPrefab, GetPlayerPosition(currentScene), GetPlayerRotation(currentScene));
+            currentPlayer = Instantiate(brotherPrefab, GetPlayerPosition(currentScene), Quaternion.identity);
+
+            // Y軸の回転（左右視点）を設定
+            float playerY = GetPlayerRotation_y(currentScene);
+            currentPlayer.transform.rotation = Quaternion.Euler(0f, playerY, 0f);
+
+            // カメラのX軸回転（上下視点）を設定
+            float cameraX = GetPlayerRotation_x(currentScene);
+            Camera.main.GetComponent<CameraController>().SetInitialXRotation(cameraX);
+
         }
         else
         {
-            currentPlayer = Instantiate(sisterPrefab, GetPlayerPosition(realWorldScene), GetPlayerRotation(realWorldScene));
+            currentPlayer = Instantiate(sisterPrefab, GetPlayerPosition(realWorldScene), Quaternion.identity);
+
+            // Y軸の回転（左右視点）を設定
+            float playerY = GetPlayerRotation_y(realWorldScene);
+            currentPlayer.transform.rotation = Quaternion.Euler(0f, playerY, 0f);
+
+            // カメラのX軸回転（上下視点）を設定
+            float cameraX = GetPlayerRotation_x(realWorldScene);
+            Camera.main.GetComponent<CameraController>().SetInitialXRotation(cameraX);
+        }
+
+        // 妹の足元参照を WitchManager に登録
+        var foot = currentPlayer.GetComponentsInChildren<Transform>(true)
+    .FirstOrDefault(t => t.name == "FootPoint");
+
+        if (!inBookWorld && foot != null)
+        {
+            sisterFootPoint = foot;
+            WitchManager.Instance.UpdateSisterPosition(foot.position);
+            Debug.Log($"[GameManager] 妹のFootPointを WitchManager に登録しました。（path: {foot.name}）");
+        }
+        else if (!inBookWorld && foot == null)
+        {
+            Debug.LogWarning("[GameManager] 妹のFootPointが見つかりませんでした（妹視点で生成しているか確認）");
         }
     }
 
     void SwitchWorld()
     {
+        // シーン切り替え直前に魔女を制御
+        if (WitchManager.Instance != null)
+        {
+            EnemyAI witch = WitchManager.Instance.CurrentWitch;
+            if (witch != null)
+            {
+                if (isInBookWorld)
+                {
+                    // 兄視点へ行く前：魔女を透明化して動作継続
+                    witch.SetVisible(false);
+                }
+                else
+                {
+                    // 妹視点へ戻る前：魔女を再表示
+                    witch.SetVisible(true);
+                }
+            }
+        }
+
         // プレイヤーの位置情報を記録
         SavePlayerState();
 
@@ -149,8 +180,8 @@ public class GameManager : MonoBehaviour
         {
             //本の世界から現実世界へ
             isInBookWorld = false;
-            SceneManager.LoadScene("Stage4");
-            InitializeDictionary();
+            SceneManager.LoadScene("RealWorld");
+            //InitializeDictionary();
         }
         else
         {
@@ -195,32 +226,21 @@ public class GameManager : MonoBehaviour
     {
         // シーンが読み込まれたらプレイヤーをスポーン
         SpawnPlayer(isInBookWorld);
+        RestoreHeldItem();
 
-        // 現実世界に戻った場合のみキャンバス要素を再取得
-        if (scene.name == realWorldScene)
+        // 妹視点シーンの場合
+        if (!isInBookWorld && WitchManager.Instance != null)
         {
-            //キャンバスや画像を取得
-            FindCanvasElements();
+            var witchMgr = WitchManager.Instance;
 
-            // 本のマップにあるプレイヤーの位置情報を更新
-            UpdatePlayerPosition(GetPlayerPosition(bookWorldScenes[currentBookWorldIndex]));
-
-            // 本のマップにあるティーカップの位置情報を更新
-            for (int i = 0; i < imageList.Count; i++)
+            // 妹視点かつ魔女が出現状態の場合のみ再表示
+            if (witchMgr.CurrentWitch != null && witchMgr.isWitchActive)
             {
-                string imageName = imageNames[i];
-
-                // カップの位置がCupPositionsに存在するかチェック
-                if (CupPositions.ContainsKey(imageName))
-                {
-                    UpdateCupPosition(CupPositions[imageName], imageList[i]);
-                }
+                witchMgr.CurrentWitch.SetVisible(true);
+                witchMgr.CurrentWitch.EnableAgent(true);
+                Debug.Log("Witch: 妹視点に戻ったため再表示しました。");
             }
-
         }
-
-        // プレイヤー位置の反映
-        string currentScene = isInBookWorld ? bookWorldScenes[currentBookWorldIndex] : realWorldScene;
     }
 
 
@@ -233,7 +253,24 @@ public class GameManager : MonoBehaviour
         playerPositions[worldKey] = currentPlayer.transform.position;
 
         //プレイヤーの回転情報を記録
-        playerRotations[worldKey] = currentPlayer.transform.rotation;
+        playerRotations_y[worldKey] = currentPlayer.transform.eulerAngles.y;
+        
+        float cameraX = Camera.main.transform.localEulerAngles.x;
+        if (cameraX > 180f) cameraX -= 360f;    // 角度が180度を超えていたら負の角度に変換
+        playerRotations_x[worldKey] = cameraX;
+
+
+        // 所持アイテムの保存
+        if (ItemManager.pickedItem != null)     // もしアイテムが取得中なら
+        {
+            string itemName = ItemManager.pickedItem.name;  // アイテム名を取得
+            Vector3 itemScale = ItemManager.originalScale;  // アイテムのスケールを取得
+            heldItems[worldKey] = (itemName, itemScale);    // heldItemsに情報を保存
+        }
+        else
+        {
+            heldItems.Remove(worldKey); // 所持していない場合は記録から削除
+        }
 
     }
 
@@ -247,119 +284,121 @@ public class GameManager : MonoBehaviour
         return new Vector3(0, 2f, 0);
     }
 
-    Quaternion GetPlayerRotation(string worldKey)
+    float GetPlayerRotation_y(string worldKey)
     {
         // worldKeyをもとに、プレイヤーの回転情報を返す
-        if (playerRotations.ContainsKey(worldKey))
-            return playerRotations[worldKey];
+        if (playerRotations_y.ContainsKey(worldKey))
+            return playerRotations_y[worldKey];
 
         // 初期位置
-        return new Quaternion();
+        return 0;
+    }
+    float GetPlayerRotation_x(string worldKey)
+    {
+        // worldKeyをもとに、プレイヤーの回転情報を返す
+        if (playerRotations_x.ContainsKey(worldKey))
+            return playerRotations_x[worldKey];
+
+        // 初期位置
+        return 0;
     }
 
-    void FindCanvasElements()
+    void RestoreHeldItem()
     {
-        // キャンバスを取得
-        GameObject canvasObject = GameObject.Find("BookCanvas");
+        string worldKey = isInBookWorld ? bookWorldScenes[currentBookWorldIndex] : realWorldScene;
 
-        if (canvasObject != null)
+        if (heldItems.TryGetValue(worldKey, out var itemData))
         {
-            // キャンバス内にあるマップ画像とプレイヤー画像を取得
-            mapImage = canvasObject.transform.Find("MapImage").GetComponent<RectTransform>();
-            playerImage = canvasObject.transform.Find("PlayerImage").GetComponent<RectTransform>();
+            string Name = itemData.itemName;
+            Vector3 Scale = itemData.scale;
 
+            GameObject foundItem = GameObject.Find(Name);   // アイテム名を基にアイテムオブジェクトを検索
 
-            imageList.Clear();
-            foreach (string name in imageNames)
+            if (foundItem != null)
             {
-                string ObjectName = name + "Image";
-                imageList.Add(canvasObject.transform.Find(ObjectName).GetComponent<RectTransform>());
+                // Layer を HeldItemLayer に変更
+                SetLayerRecursively(foundItem, LayerMask.NameToLayer("HeldItemLayer"));
+
+                heldItemSlot = null;
+
+                // メインカメラから"HeldItemSlot"を検索
+                heldItemSlot = Camera.main.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "HeldItemSlot");
+
+                // カメラの子にして常に表示されるように
+                foundItem.transform.SetParent(heldItemSlot, true);  // アイテムオブジェクトを
+                foundItem.transform.localPosition = Vector3.zero;
+                foundItem.transform.localRotation = Quaternion.identity;
+
+                // コライダー・リジッドボディを無効化（物理干渉防止）
+                Collider col = foundItem.GetComponent<Collider>();
+                if (col != null) col.enabled = false;
+
+                Rigidbody rb = foundItem.GetComponent<Rigidbody>();
+                if (rb != null) rb.isKinematic = true;
+
+                ItemManager.pickedItem = foundItem;
+                ItemManager.originalScale = Scale;
+            }
+            else
+            {
+                Debug.LogWarning($"[{worldKey}] シーンに '{Name}' のアイテムオブジェクトが見つかりませんでした。");
             }
         }
-
     }
 
-    public void UpdatePlayerPosition(Vector3 playerWorldPos)
+    void SetLayerRecursively(GameObject obj, int newLayer)
     {
-        if (mapImage == null || playerImage == null) return;
+        if (obj == null) return;
 
-        // 現在の部屋サイズを取得
-        string currentScene = bookWorldScenes[currentBookWorldIndex];
-        if (!roomSizes.ContainsKey(currentScene)) return;
-        Vector2 roomSize = roomSizes[currentScene];
+        obj.layer = newLayer;
 
-        // ワールド座標から相対座標に変換
-        float relativeX = (playerWorldPos.x - worldCenter.x) / (roomSize.x / 2f);
-        float relativeY = (playerWorldPos.z - worldCenter.y) / (roomSize.y / 2f);
-
-        // マップのサイズ
-        Vector2 mapSize = mapImage.rect.size;
-        Vector2 mapCenterOffset = (Vector2)mapImage.localPosition;
-
-        // マップ上の座標に変換
-        float posX = relativeX * (mapSize.x / 2f);
-        float posY = relativeY * (mapSize.y / 2f);
-
-        // 中心基準に位置を設定
-        playerImage.anchoredPosition = mapCenterOffset + new Vector2(posX, posY);
-    }
-
-    public void UpdateCupPosition(Vector3 CupWorldPos, RectTransform imagePos)
-    {
-        if (mapImage == null || imagePos == null) return;
-
-        // 現在の部屋サイズを取得
-        string currentScene = bookWorldScenes[currentBookWorldIndex];
-        if (!roomSizes.ContainsKey(currentScene)) return;
-        Vector2 roomSize = roomSizes[currentScene];
-
-        // ワールド座標から相対座標に変換
-        float relativeX = (CupWorldPos.x - worldCenter.x) / (roomSize.x / 2f);
-        float relativeY = (CupWorldPos.z - worldCenter.y) / (roomSize.y / 2f);
-
-        // マップのサイズ
-        Vector2 mapSize = mapImage.rect.size;
-        Vector2 mapCenterOffset = (Vector2)mapImage.localPosition;
-
-        // マップ上の座標に変換
-        float posX = relativeX * (mapSize.x / 2f);
-        float posY = relativeY * (mapSize.y / 2f);
-
-        // 中心基準に位置を設定
-        imagePos.anchoredPosition = mapCenterOffset + new Vector2(posX, posY);
-    }
-
-    void TogglePauseMenu()
-    {
-        if (isPaused)
+        foreach (Transform child in obj.transform)
         {
-            if (PauseCanvasInstance != null)
+            if (child == null) continue;
+            SetLayerRecursively(child.gameObject, newLayer);
+        }
+    }
+
+    // GameOver は WitchManager から呼び出される
+    public void TriggerGameOver(string reason)
+    {
+        Debug.Log($"GAME OVER: {reason}");
+
+        // プレイヤー操作を停止
+        PlayerController.isPlayerMove = false;
+        CameraController.isCameraMove = false;
+        isSceneMove = false;
+
+        // カーソルを非表示＆固定を解除
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+
+        // 魔女BGMの停止（安全策）
+        var witchManager = FindFirstObjectByType<WitchManager>();
+        if (witchManager != null)
+        {
+            witchManager.StopWitchBGM();
+        }
+
+        // GameOverCanvas を表示
+        if (spawnedGameOverCanvas == null)
+        {
+            // インスペクタに設定されていればそれを使い、なければResourcesからロード
+            GameObject prefab = gameOverCanvasPrefab != null
+                ? gameOverCanvasPrefab
+                : Resources.Load<GameObject>("Objects/GameOverCanvas");
+
+            if (prefab != null)
             {
-                Destroy(PauseCanvasInstance);
+                spawnedGameOverCanvas = Instantiate(prefab);
+                spawnedGameOverCanvas.SetActive(true);
             }
-            //ゲームを再開
-            isPaused = false;
-
-            //プレイヤーを移動可能に
-            PlayerController.isPlayerMove = true;
-
-            // カーソルを非表示＆固定
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
         }
         else
         {
-            PauseCanvasInstance = Instantiate(PauseCanvas, transform);
-            //ゲームを停止
-            isPaused = true;
-
-            //プレイヤーを不移動可能に
-            PlayerController.isPlayerMove = false;
-
-            // カーソルを非表示＆固定を解除
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-
+            spawnedGameOverCanvas.SetActive(true);
         }
+
     }
 }
