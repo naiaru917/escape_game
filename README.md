@@ -1,19 +1,18 @@
 # escape_game
 このリポジトリには、卒論で作成中の3D脱出ゲームで使用しているスクリプトをまとめています。
-- 開発環境：Unity 2022.6000.0.46f1
+- 開発環境：Unity 6000.0.58f2
 - 使用言語：c#
 
 ## ゲーム全体
-- PlayerController.cs...プレイヤーの位置保存・復元、ポーズ画面等
-- Gate.cs...次のステージへ行くためのゲート。接触することで移動可能。
-- OutlineController.cs...オブジェクトにアウトラインを生成する処理
+- PlayerController.cs...プレイヤーの位置保存・復元等
+- GateManager.cs...次のステージへ行くためのゲート。接触することで移動可能。
 - ItemManager.cs...アイテムの取得処理
-- ItemUsePoint.cs...アイテムの使用可能な場所を設定
 - BookController.cs...本をクリックした際に表示されるCanvasのUI関連処理
+- PauseManager.cs...ポーズ画面の表示
 
 ## Player関連
 - PlayerController.cs...プレイヤーの移動処理
-- camera.cs...一人称（FPS）視点のカメラ処理
+- CameraManager.cs...一人称（FPS）視点のカメラ処理
 
 ## MiniGame
 - teaCupGimmick.cs...ティーカップをモチーフにした謎解き用ミニゲーム
@@ -37,7 +36,25 @@
 >- 一定の得点以上を取得したらクリア
 >- 得点が足りなかったらリトライ
 
+## Gimmick
+- DialLock.cs
+- DialPanel.cs
+- ItemPuzzleManager.cs
+- ItemUsePoint.cs...アイテムの使用可能な場所を設定
+- PuzzleStage
+
+## Witch関連
+- WitchManager.cs
+- EnemyAI.cs
+- Hideable.cs
+
 ## シーン遷移関連
 - ObjectState.cs...オブジェクトの位置情報を保存するアセット作成用
 - ObjectStateManager.cs...オブジェクト情報をアセットへ登録・取り出し処理
 - PrefabStateRestorer.cs...プレハブオブジェクトの生成・位置復元処理
+
+## その他
+- RealWorldManager.cs
+- StageSelectButton.cs
+- UIManager.cs
+- WorldMapUpdater.cs
