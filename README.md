@@ -5,7 +5,6 @@
 
 ## ゲーム全体
 - PlayerController.cs...プレイヤーの位置保存・復元等
-- GateManager.cs...次のステージへ行くためのゲート。接触することで移動可能。
 - ItemManager.cs...アイテムの取得処理
 - BookController.cs...本をクリックした際に表示されるCanvasのUI関連処理
 - PauseManager.cs...ポーズ画面の表示
@@ -14,7 +13,7 @@
 - PlayerController.cs...プレイヤーの移動処理
 - CameraManager.cs...一人称（FPS）視点のカメラ処理
 
-## MiniGame
+## ミニゲーム
 - teaCupGimmick.cs...ティーカップをモチーフにした謎解き用ミニゲーム
 >- 5×5のマス目上に置かれた4つのティーカップを、それぞれ指定した位置に移動したらクリア
 >- ティーカップは押した進行方向に向かって真っすぐ進む
@@ -36,25 +35,26 @@
 >- 一定の得点以上を取得したらクリア
 >- 得点が足りなかったらリトライ
 
-## Gimmick
-- DialLock.cs
-- DialPanel.cs
-- ItemPuzzleManager.cs
+## ギミック関連
+- DialLock.cs...ダイアルロック関連処理
+- DialPanel.cs...ダイアルロックのパネル（数字の切り替え）処理
+- ItemPuzzleManager.cs...アイテム設置のパズルに関する処理
 - ItemUsePoint.cs...アイテムの使用可能な場所を設定
-- PuzzleStage
+- PuzzleStage...どこまでパズルが進んだかを管理
 
 ## Witch関連
-- WitchManager.cs
-- EnemyAI.cs
-- Hideable.cs
+- WitchManager.cs...魔女制御用処理
+- EnemyAI.cs...魔女の移動用処理
+- Hideable.cs...プレイヤーが箱に隠れる処理
 
-## シーン遷移関連
+## シーン遷移系
 - ObjectState.cs...オブジェクトの位置情報を保存するアセット作成用
 - ObjectStateManager.cs...オブジェクト情報をアセットへ登録・取り出し処理
 - PrefabStateRestorer.cs...プレハブオブジェクトの生成・位置復元処理
+- GateManager.cs...次のステージへ行くためのゲート。接触することで移動可能。
 
 ## その他
-- RealWorldManager.cs
-- StageSelectButton.cs
-- UIManager.cs
-- WorldMapUpdater.cs
+- RealWorldManager.cs...現実世界での処理
+- StageSelectButton.cs...ステージ選択画面用処理
+- UIManager.cs...マウスによる画像UIの移動処理（付箋の移動）
+- WorldMapUpdater.cs...本に表示されるマップの更新処理
