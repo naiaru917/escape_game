@@ -1,4 +1,5 @@
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,11 +28,19 @@ public class WitchManager : MonoBehaviour
     public float witchCatchHeight = 1.5f;   // 捕獲できる高さ差の閾値
 
     [Header("BGM・赤フレーム")]
-    public AudioSource witchBGM;
     public RawImage redFrame;
-    public float maxSoundDistance = 20f;
-    public float minSoundDistance = 3f;
     public float maxRedAlpha = 0.8f;
+
+    [Header("心音設定（BGM→心音SE化）")]
+    public AudioSource heartbeatSource;       // 心音用AudioSource
+    public float maxHeartDistance = 5f;      // 心音が聞こえなくなる距離
+    public float minHeartDistance = 3f;       // 最大強度の距離
+    public float maxHeartVolume = 0.2f;         // 最大音量
+    public float minHeartVolume = 0.01f;       // 最小音量
+    public float maxHeartPitch = 1.4f;        // 近距離での速い鼓動
+    public float minHeartPitch = 0.8f;        // 遠距離でのゆっくり鼓動
+    public float heartSmoothSpeed = 2.0f; // 変化スピード（1～3くらいが自然）
+
 
     [Header("デバッグ設定")]
     public bool enableDebugBrotherLog = true; // 兄視点ログ
@@ -84,16 +93,27 @@ public class WitchManager : MonoBehaviour
 
     private void InitializeBGMAndFrame()
     {
-        // --- BGM 初期化 ---
-        if (witchBGM == null)
+        // --- 心音SE 初期化 ---
+        if (heartbeatSource == null)
         {
-            witchBGM = gameObject.AddComponent<AudioSource>();
-            witchBGM.loop = true;
-            witchBGM.playOnAwake = false;
-            witchBGM.volume = 0f;
-            AudioClip clip = Resources.Load<AudioClip>("Objects/旅のさがしもの");
-            if (clip != null) witchBGM.clip = clip;
+            heartbeatSource = gameObject.AddComponent<AudioSource>();
+            heartbeatSource.loop = true;                // 常にループ再生
+            heartbeatSource.playOnAwake = false;
+            heartbeatSource.volume = 0f;
+            heartbeatSource.spatialBlend = 0f;          // 2D再生（プレイヤー視点用）
+            heartbeatSource.rolloffMode = AudioRolloffMode.Linear;
+
+            AudioClip clip = Resources.Load<AudioClip>("Sounds/Heartbeat04-1(Slow-Reverb)");
+            if (clip != null)
+            {
+                heartbeatSource.clip = clip;
+            }
+            else
+            {
+                Debug.LogWarning("心音SEが見つかりません。Resourcesフォルダを確認してください。");
+            }
         }
+
 
         // --- 赤フレーム初期化 ---
         if (redFrame != null)
@@ -130,150 +150,169 @@ public class WitchManager : MonoBehaviour
     {
         if (!isWitchActive || CurrentWitch == null) return;
 
-        // 魔女FootPoint基準
-        Vector3 witchFoot = (WitchFootPoint != null) ? WitchFootPoint.position : CurrentWitch.transform.position;
+        HandleWitchFootsteps();
 
-        // 妹の位置を常に更新（妹視点）
-        if (!GameManager.isInBookWorld && GameManager.Instance != null && GameManager.Instance.sisterFootPoint != null)
-        {
+        // 妹位置更新（妹視点時のみ）
+        if (!GameManager.isInBookWorld && GameManager.Instance?.sisterFootPoint != null)
             sisterPosition = GameManager.Instance.sisterFootPoint.position;
-        }
 
-        if (!GameManager.isInBookWorld)
-        {
-            UpdateSisterWorldBehavior(witchFoot);
-        }
+        // 距離を一括取得
+        GetDistanceInfo(out float distanceXZ, out float heightDiff);
+
+        // 視点ごとの音量補正
+        float heartbeatVolumeMultiplier = GameManager.isInBookWorld ? 0.5f : 1.0f;
+
+        // 共通演出
+        UpdateHeartbeatAndFrame(distanceXZ, heartbeatVolumeMultiplier);
+
+        // 視点ごとのロジック
+        if (GameManager.isInBookWorld)
+            UpdateBrotherSpecific(distanceXZ, heightDiff);
         else
-        {
-            UpdateBrotherWorldBehavior(witchFoot);
-        }
-
+            UpdateSisterSpecific(distanceXZ, heightDiff);
     }
 
-    private void UpdateSisterWorldBehavior(Vector3 witchFoot)
+
+    // 魔女と妹の距離
+    private Vector3 GetSisterPositionForDistance()
     {
-        if (GameManager.isHiding)
-        {
-            // 魔女がChase中ならSearchに変更
-            if (CurrentWitch != null && CurrentWitch.CurrentState == WitchState.Chase)
-            {
-                CurrentWitch.SetStateToSearch(GameManager.Instance.sisterFootPoint.position);
-            }
+        // 「妹は移動しないので最後の位置で固定」が仕様なら、兄視点では保存値を使う
+        if (GameManager.isInBookWorld)
+            return sisterPosition;
 
-            // 捕獲や距離判定をスキップ
-            return;
-        }
+        // 妹視点では実際の sisterFootPoint の座標を優先して使う（存在しない場合は保存値）
+        if (GameManager.Instance != null && GameManager.Instance.sisterFootPoint != null)
+            return GameManager.Instance.sisterFootPoint.position;
 
-        Vector3 sisterFoot = (GameManager.Instance != null && GameManager.Instance.sisterFootPoint != null)
-            ? GameManager.Instance.sisterFootPoint.position
-            : sisterPosition;
+        return sisterPosition;
+    }
 
-        float distanceXZ = Vector2.Distance(
-            new Vector2(sisterFoot.x, sisterFoot.z),
-            new Vector2(witchFoot.x, witchFoot.z)
-        );
-        float heightDiff = Mathf.Abs(sisterFoot.y - witchFoot.y);
+    // 魔女と妹の距離を「XZ距離＋高さ差」で取得
+    private void GetDistanceInfo(out float distanceXZ, out float heightDiff)
+    {
+        Vector3 witchFoot = (WitchFootPoint != null) ? WitchFootPoint.position : CurrentWitch.transform.position;
+        Vector3 sisterFoot = GetSisterPositionForDistance();
 
-        // 赤フレーム更新
+        distanceXZ = Vector2.Distance(new Vector2(witchFoot.x, witchFoot.z), new Vector2(sisterFoot.x, sisterFoot.z));
+        heightDiff = Mathf.Abs(sisterFoot.y - witchFoot.y);
+    }
+
+    // --- 共通：魔女足音制御 ---
+    private void HandleWitchFootsteps()
+    {
+        if (CurrentWitch?.footAudioSource == null) return;
+        CurrentWitch.footAudioSource.mute = GameManager.isInBookWorld;
+    }
+
+    // --- 共通：心音と赤フレーム更新 ---
+    private void UpdateHeartbeatAndFrame(float distanceXZ, float volumeMultiplier)
+    {
+        // 赤フレーム処理
         if (redFrame != null)
         {
-            float t = Mathf.InverseLerp(minSoundDistance, maxSoundDistance, distanceXZ);
-            float targetAlpha = Mathf.Lerp(maxRedAlpha, 0f, t);
-            Color c = redFrame.color;
-            c.a = Mathf.Lerp(c.a, targetAlpha, Time.deltaTime * 5f);
-            redFrame.color = c;
-        }
-
-        // BGM更新
-        if (witchBGM != null)
-        {
-            float soundT = Mathf.InverseLerp(minSoundDistance, maxSoundDistance, distanceXZ);
-            witchBGM.volume = Mathf.Lerp(1f, 0.2f, soundT);
-            if (!witchBGM.isPlaying) witchBGM.Play();
-        }
-
-        // 捕獲判定
-        if (!GameManager.isHiding) // ← 隠れている場合はスキップ
-        {
-            if (distanceXZ <= witchCatchDistance && heightDiff < witchCatchHeight)
+            if (!GameManager.isInBookWorld)
             {
-                GameManager.Instance.TriggerGameOver("魔女に捕まった");
-                DeactivateWitch();
+                float t = Mathf.InverseLerp(minHeartDistance, maxHeartDistance, distanceXZ);
+                float targetAlpha = Mathf.Lerp(maxRedAlpha, 0f, t);
+                Color c = redFrame.color;
+                c.a = Mathf.Lerp(c.a, targetAlpha, Time.deltaTime * 5f);
+                redFrame.color = c;
             }
-        }
-        else
-        {
-            // 隠れている場合、もし魔女がまだChase中なら → Search状態に遷移させる
-            if (CurrentWitch != null && CurrentWitch.CurrentState != WitchState.Exit)
+            else
             {
-                CurrentWitch.SetStateToSearch(GameManager.Instance.sisterFootPoint.position);
+                // 兄視点なら非表示へ
+                Color c = redFrame.color;
+                c.a = Mathf.Lerp(c.a, 0f, Time.deltaTime * 5f);
+                redFrame.color = c;
             }
         }
 
-        //Debug.Log($"[DistanceCheck] DistanceXZ={distanceXZ:F2}, HeightDiff={heightDiff:F2}, WitchActive={isWitchActive}, WitchFoot={witchFoot}, SisterFoot={sisterFoot}");
+        // 心音処理
+        if (heartbeatSource != null)
+        {
+            // 距離を 0～1 の範囲に正規化（近いほど0、遠いほど1に近づく）
+            float t = Mathf.InverseLerp(minHeartDistance, maxHeartDistance, distanceXZ);
 
+            // 距離が近いほど音量が大きくなる
+            float targetVolume = Mathf.Lerp(maxHeartVolume, minHeartVolume, t) * volumeMultiplier;
+
+            // 距離が近いほど鼓動が速く（ピッチが高く）なる
+            float targetPitch = Mathf.Lerp(maxHeartPitch, minHeartPitch, t);
+
+            // 現在の音量・ピッチを滑らかに変化させる（急な変化を防ぐ）
+            heartbeatSource.volume = Mathf.Lerp(heartbeatSource.volume, targetVolume, Time.deltaTime * heartSmoothSpeed);
+            heartbeatSource.pitch = Mathf.Lerp(heartbeatSource.pitch, targetPitch, Time.deltaTime * heartSmoothSpeed);
+
+            // 心音が再生されていない場合は再生を開始
+            if (!heartbeatSource.isPlaying)
+                heartbeatSource.Play();
+        }
     }
 
-    private void UpdateBrotherWorldBehavior(Vector3 witchFoot)
+
+    // --- 共通：捕獲判定 ---
+    private bool CheckCatchCondition()
+    {
+        GetDistanceInfo(out float distanceXZ, out float heightDiff);
+        return (distanceXZ <= witchCatchDistance && heightDiff < witchCatchHeight);
+    }
+
+
+    // --- 妹視点専用 ---
+    private void UpdateSisterSpecific(float distanceXZ, float heightDiff)
+    {
+        if (!GameManager.isHiding && CheckCatchCondition())
+        {
+            GameManager.Instance.TriggerGameOver("魔女に捕まった");
+            DeactivateWitch();
+        }
+    }
+
+
+    // --- 兄視点専用 ---
+    private void UpdateBrotherSpecific(float distanceXZ, float heightDiff)
     {
         if (CurrentWitch == null || CurrentWitch.agent == null) return;
 
-        Vector3 sisterFoot = sisterPosition; // 妹の最後FootPoint
+        // 妹の最後の位置（固定）
+        Vector3 sisterFoot = sisterPosition;
 
-        // 発見判定
+        // 見えているなら追跡開始
         if (CurrentWitch.CanSeeSisterBrotherView(sisterFoot))
         {
-            // 発見した場合は追跡状態に変更
             CurrentWitch.SetStateToChase(sisterFoot);
-            Debug.Log("[BrotherView] 妹を発見、追跡開始");
+            if (enableDebugBrotherLog)
+                Debug.Log("[BrotherView] 妹を発見、追跡開始");
         }
 
-        // 状態復元（Patrolは兄視点で無効）
+        // 現在の状態に応じたAI制御
         switch (CurrentWitch.CurrentState)
         {
-            case WitchState.Patrol: break;
-            case WitchState.Chase: CurrentWitch.SetStateToChase(sisterFoot); break;
-            case WitchState.Search: CurrentWitch.SetStateToSearch(sisterFoot); break;
-            case WitchState.Exit: CurrentWitch.SetStateToExit(); break;
+            case WitchState.Patrol:
+                break;
+            case WitchState.Chase:
+                CurrentWitch.SetStateToChase(sisterFoot);
+                break;
+            case WitchState.Search:
+                CurrentWitch.SetStateToSearch(sisterFoot);
+                break;
+            case WitchState.Exit:
+                CurrentWitch.SetStateToExit();
+                break;
         }
 
+        // 兄視点では魔女を非表示にして移動は継続
         CurrentWitch.SetVisible(false);
         CurrentWitch.EnableAgent(true);
 
-        float distanceXZ = Vector2.Distance(
-            new Vector2(sisterFoot.x, sisterFoot.z),
-            new Vector2(witchFoot.x, witchFoot.z)
-        );
-        float heightDiff = Mathf.Abs(sisterFoot.y - witchFoot.y);
-
-        // デバッグログ
-        if (enableDebugBrotherLog)
+        // 捕獲判定
+        if (CheckCatchCondition())
         {
-            Debug.Log($"[BrotherView Debug] DistanceXZ={distanceXZ:F2}, HeightDiff={heightDiff:F2}, WitchState={CurrentWitch.CurrentState}, WitchChasing={CurrentWitch.IsChasing}");
-        }
-
-        if (distanceXZ <= witchCatchDistance && heightDiff < witchCatchHeight)
-        {
-            Debug.Log("[BrotherView Debug] 妹が魔女に捕まった！");
             GameManager.Instance.TriggerGameOver("妹が魔女に捕まった…（兄視点）");
             DeactivateWitch();
         }
-
-        // 赤フレーム非表示
-        if (redFrame != null)
-        {
-            Color c = redFrame.color;
-            c.a = Mathf.Lerp(c.a, 0f, Time.deltaTime * 5f);
-            redFrame.color = c;
-        }
-
-        // BGM低音量再生
-        if (witchBGM != null)
-        {
-            witchBGM.volume = Mathf.MoveTowards(witchBGM.volume, 0.25f, Time.deltaTime * 0.5f);
-            if (!witchBGM.isPlaying) witchBGM.Play();
-        }
     }
+
 
     // オプション：Gizmosで魔女と妹の最後位置を表示
     private void OnDrawGizmos()
@@ -347,18 +386,24 @@ public class WitchManager : MonoBehaviour
         // --- 赤フレーム即更新 ---
         if (redFrame != null)
         {
-            float t = Mathf.InverseLerp(minSoundDistance, maxSoundDistance, distanceXZ);
+            float t = Mathf.InverseLerp(minHeartDistance, maxHeartDistance, distanceXZ);
             float targetAlpha = Mathf.Lerp(maxRedAlpha, 0f, t);
             Color c = redFrame.color;
             c.a = targetAlpha;
             redFrame.color = c;
         }
 
-        // --- BGM即更新 ---
-        if (witchBGM != null)
+        // --- 心音即更新（距離に応じて音量・ピッチ変化） ---
+        if (heartbeatSource != null)
         {
-            float soundT = Mathf.InverseLerp(maxSoundDistance, minSoundDistance, distanceXZ);
-            witchBGM.volume = Mathf.Lerp(0.2f, 1f, 1f - soundT);
+            float t = Mathf.InverseLerp(minHeartDistance, maxHeartDistance, distanceXZ);
+            heartbeatSource.volume = Mathf.Lerp(maxHeartVolume, minHeartVolume, t);
+            heartbeatSource.pitch = Mathf.Lerp(maxHeartPitch, minHeartPitch, t);
+
+            if (!heartbeatSource.isPlaying)
+            {
+                heartbeatSource.Play();
+            }
         }
 
         Debug.Log("[WitchManager] ForceImmediateUpdate() により初回同期完了");
@@ -372,7 +417,7 @@ public class WitchManager : MonoBehaviour
         isWitchActive = false;
         witchIsChasing = false;
 
-        if (witchBGM != null) witchBGM.Stop();
+        if (heartbeatSource != null) heartbeatSource.Stop();
         if (redFrame != null)
         {
             Color c = redFrame.color;
@@ -409,13 +454,14 @@ public class WitchManager : MonoBehaviour
         }
     }
 
-    public void StopWitchBGM()
+    public void StopHeartbeat()
     {
-        if (witchBGM != null && witchBGM.isPlaying)
+        if (heartbeatSource != null && heartbeatSource.isPlaying)
         {
-            witchBGM.Stop();
+            heartbeatSource.Stop();
         }
     }
+
 
     public void RegisterWitch(EnemyAI witch)
     {
@@ -441,4 +487,34 @@ public class WitchManager : MonoBehaviour
         if (CurrentWitch == null) return;
         CurrentWitch.SetVisible(visible);
     }
+
+    public void StopAllSounds()
+    {
+        // --- 魔女の足音停止 ---
+        if (CurrentWitch != null && CurrentWitch.footAudioSource != null)
+        {
+            CurrentWitch.footAudioSource.Stop();
+        }
+
+        // --- プレイヤーの足音停止 ---
+        var player = GameObject.FindWithTag("Player");
+        if (player != null)
+        {
+            var pc = player.GetComponent<PlayerController>();
+            if (pc != null)
+            {
+                pc.StopFootsteps(); // ← ここで安全に停止できる
+            }
+        }
+
+        // --- 心音停止 ---
+        if (heartbeatSource != null && heartbeatSource.isPlaying)
+        {
+            heartbeatSource.Stop();
+        }
+
+        Debug.Log("[WitchManager] StopAllSounds(): 魔女・プレイヤーの足音、心音をすべて停止しました。");
+    }
+
+
 }

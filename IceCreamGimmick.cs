@@ -2,75 +2,72 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Gimmick2 : MonoBehaviour
+public class IceCreamGimmick : MonoBehaviour
 {
     public int stageNumber;
-    public GameObject hitItem;  //ç”»é¢ä¸­å¤®ã«ã‚ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
-    public GameObject selectIce;    //é¸æŠã—ãŸã‚¢ã‚¤ã‚¹
+    public GameObject hitItem;  //‰æ–Ê’†‰›‚É‚ ‚éƒIƒuƒWƒFƒNƒg
+    public GameObject selectIce;    //‘I‘ğ‚µ‚½ƒAƒCƒX
 
-    public GameObject IceA, IceB, IceC, IceD;   //ã‚¢ã‚¤ã‚¹ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
-    public GameObject SwichA, SwichB, SwichC, SwichD;   //ã‚¹ã‚¤ãƒƒãƒã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
+    public GameObject IceA, IceB, IceC, IceD;   //ƒAƒCƒX‚ÌƒIƒuƒWƒFƒNƒg
+    public GameObject SwichA, SwichB, SwichC, SwichD;   //ƒXƒCƒbƒ`‚ÌƒIƒuƒWƒFƒNƒg
 
-    private List<GameObject> selectIceList; //é¸æŠã—ãŸã‚¢ã‚¤ã‚¹ã‚’è¨˜éŒ²
-    private List<string> answerList;        //æ­£è§£ã®ã‚¢ã‚¤ã‚¹ã‚’è¨˜éŒ²
+    private List<GameObject> selectIceList; //‘I‘ğ‚µ‚½ƒAƒCƒX‚ğ‹L˜^
+    private List<string> answerList;        //³‰ğ‚ÌƒAƒCƒX‚ğ‹L˜^
 
     public Text EventTxt;
-    public GameObject Gate; //æ¬¡ã®éƒ¨å±‹ã¸ã®ã‚²ãƒ¼ãƒˆ
-    private int iceCnt;     //ç¾åœ¨é‡ã­ã¦ã„ã‚‹ã‚¢ã‚¤ã‚¹ã®å€‹æ•°
+    public GameObject Gate; //Ÿ‚Ì•”‰®‚Ö‚ÌƒQ[ƒg
+    private int iceCnt = 0;     //Œ»İd‚Ë‚Ä‚¢‚éƒAƒCƒX‚ÌŒÂ”
+
+    public ObjectState objectState;
+    [SerializeField] private float rayDistance = 2.5f; // ƒŒƒC‚ğ”ò‚Î‚·Å‘å‹——£
 
     // Start is called before the first frame update
     void Start()
     {
         EventTxt.enabled = false;
-        iceCnt = 0;
 
-        //æ­£ã—ã„ã‚¢ã‚¤ã‚¹ã®é †ç•ªã‚’ç™»éŒ²
+        //³‚µ‚¢ƒAƒCƒX‚Ì‡”Ô‚ğ“o˜^
         answerList = new List<string> { "IceA", "IceB", "IceC", "IceD" };
-        selectIceList = new List<GameObject>();
 
-        //æ¬¡ã®éƒ¨å±‹ã¸ã®ã‚²ãƒ¼ãƒˆã‚’éè¡¨ç¤º
+        if (selectIceList == null)
+        {
+            selectIceList = new List<GameObject>();
+        }
+        
+
+        //Ÿ‚Ì•”‰®‚Ö‚ÌƒQ[ƒg‚ğ”ñ•\¦
         Gate.SetActive(false);
     }
 
     // Update is called once per frame
     void Update()
     {
-        // ç”»é¢ä¸­å¤®ã®ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã‚’å–å¾—
+        // ‰æ–Ê’†‰›‚ÌƒXƒNƒŠ[ƒ“À•W‚ğæ“¾
         Vector3 centerScreenPosition = new Vector3(Screen.width / 2, Screen.height / 2, 0);
 
-        // ç”»é¢ä¸­å¤®ã®ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã‚’ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™ã«å¤‰æ›
+        // ‰æ–Ê’†‰›‚ÌƒXƒNƒŠ[ƒ“À•W‚ğƒ[ƒ‹ƒhÀ•W‚É•ÏŠ·
         Ray ray = Camera.main.ScreenPointToRay(centerScreenPosition);
         RaycastHit hit;
 
 
-        // å‰å›ã® hitItem ã® Outline ã‚’ç„¡åŠ¹åŒ–ï¼ˆå‰å›ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‹ã‚‰ Outline ã‚’å‰Šé™¤ï¼‰
+        // ‘O‰ñ‚Ì hitItem ‚Ì Outline ‚ğ–³Œø‰»i‘O‰ñ‚ÌƒIƒuƒWƒFƒNƒg‚©‚ç Outline ‚ğíœj
         if (hitItem != null)
         {
-            Outline outline = hitItem.GetComponent<Outline>();
-            if (outline != null)
-            {
-                outline.enabled = false; // Outline ã‚’ç„¡åŠ¹åŒ–
-            }
-            hitItem = null; // hitItem ã‚’ç©ºã«ã™ã‚‹
+            hitItem = null; // hitItem ‚ğ‹ó‚É‚·‚é
             EventTxt.enabled = false;
         }
 
-        // ãƒ¬ã‚¤ãŒã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«å½“ãŸã£ãŸå ´åˆã®ã¿å‡¦ç†ã‚’å®Ÿè¡Œ
-        if (Physics.Raycast(ray, out hit))
+        // ƒŒƒC‚ªƒIƒuƒWƒFƒNƒg‚É“–‚½‚Á‚½ê‡‚Ì‚İˆ—‚ğÀs
+        if (Physics.Raycast(ray, out hit, rayDistance))
         {
-            // hit.collider ãŒ null ã§ãªã„ã‹ãƒã‚§ãƒƒã‚¯
+            // hit.collider ‚ª null ‚Å‚È‚¢‚©ƒ`ƒFƒbƒN
             if (hit.collider != null && hit.collider.CompareTag("Swich"))
             {
-                // ã‚¯ãƒªãƒƒã‚¯ã—ãŸã‚¢ã‚¤ãƒ†ãƒ ã®GameObjectã‚’ä¿å­˜
+                // ƒNƒŠƒbƒN‚µ‚½ƒAƒCƒeƒ€‚ÌGameObject‚ğ•Û‘¶
                 hitItem = hit.collider.gameObject;
 
-                Outline outline = hitItem.GetComponent<Outline>();
-
-                // Outline ã‚’æœ‰åŠ¹åŒ–
-                outline.enabled = true;
-
-                //ã‚¤ãƒ™ãƒ³ãƒˆãƒ†ã‚­ã‚¹ãƒˆã‚’è¡¨ç¤º
-                EventTxt.text = "ãƒœã‚¿ãƒ³ã‚’ã‚¯ãƒªãƒƒã‚¯";
+                //ƒCƒxƒ“ƒgƒeƒLƒXƒg‚ğ•\¦
+                EventTxt.text = "ƒ{ƒ^ƒ“‚ğƒNƒŠƒbƒN";
                 EventTxt.enabled = true;
             }
         }
@@ -79,31 +76,32 @@ public class Gimmick2 : MonoBehaviour
         {
             if (Input.GetMouseButtonDown(0))
             {
-                //é¸æŠã—ãŸãƒœã‚¿ãƒ³ã‚’ã‚‚ã¨ã«é¸æŠã—ãŸã‚¢ã‚¤ã‚¹ã‚’ç™»éŒ²
+                //‘I‘ğ‚µ‚½ƒ{ƒ^ƒ“‚ğ‚à‚Æ‚É‘I‘ğ‚µ‚½ƒAƒCƒX‚ğ“o˜^
                 SwichToIce(hitItem);
 
-                //é¸æŠã—ãŸã‚¢ã‚¤ã‚¹ã‚’å‡ºç¾
+                //‘I‘ğ‚µ‚½ƒAƒCƒX‚ğoŒ»
                 AddIce(selectIce);
             }
 
             if (iceCnt == 4)
             {
-                //ã‚¢ã‚¤ã‚¹ã®é †ç•ªãŒåˆã£ã¦ã„ã‚‹ã‹åˆ¤å®š
+                //ƒAƒCƒX‚Ì‡”Ô‚ª‡‚Á‚Ä‚¢‚é‚©”»’è
                 if (CheckIce())
                 {
                     Debug.Log("GameClear!!");
                     Gate.SetActive(true);
+                    Destroy(this);
                 }
             }
             else if (iceCnt >= 5)
             {
-                //ã‚¢ã‚¤ã‚¹ã‚’å‰Šé™¤
+                //ƒAƒCƒX‚ğíœ
                 ResetGimmick();
 
-                //é¸æŠã—ãŸãƒœã‚¿ãƒ³ã‚’ã‚‚ã¨ã«é¸æŠã—ãŸã‚¢ã‚¤ã‚¹ã‚’ç™»éŒ²
+                //‘I‘ğ‚µ‚½ƒ{ƒ^ƒ“‚ğ‚à‚Æ‚É‘I‘ğ‚µ‚½ƒAƒCƒX‚ğ“o˜^
                 SwichToIce(hitItem);
 
-                //é¸æŠã—ãŸã‚¢ã‚¤ã‚¹ã‚’å‡ºç¾
+                //‘I‘ğ‚µ‚½ƒAƒCƒX‚ğoŒ»
                 AddIce(selectIce);
             }
 
@@ -133,7 +131,8 @@ public class Gimmick2 : MonoBehaviour
 
     void AddIce(GameObject selectIce)
     {
-        GameObject instance = Instantiate(selectIce);  //ã‚¢ã‚¤ã‚¹ï¼ˆã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ï¼‰ã‚’ç”Ÿæˆ
+        GameObject instance = Instantiate(selectIce);  //ƒAƒCƒXiƒCƒ“ƒXƒ^ƒ“ƒXj‚ğ¶¬
+        instance.name = selectIce.name;
         selectIceList.Add(instance);
         iceCnt++;
     }
@@ -143,7 +142,7 @@ public class Gimmick2 : MonoBehaviour
         for (int i = 0; i < answerList.Count; i++)
         {
             string correctName = answerList[i];
-            string selectedName = selectIceList[i].name.Replace("(Clone)", "").Trim();
+            string selectedName = selectIceList[i].name.Trim();
 
             if (correctName != selectedName)
                 return false;
@@ -155,9 +154,18 @@ public class Gimmick2 : MonoBehaviour
     {
         foreach (GameObject ice in selectIceList)
         {
-            Destroy(ice);   //ã‚¢ã‚¤ã‚¹ã®å‰Šé™¤
+            Destroy(ice);   //ƒAƒCƒX‚Ìíœ
         }
-        selectIceList.Clear(); // ãƒªã‚¹ãƒˆã‚‚ç©ºã«
-        iceCnt = 0; //ã‚¢ã‚¤ã‚¹ã®å€‹æ•°ã‚’ç©ºã«
+        selectIceList.Clear(); // ƒŠƒXƒg‚à‹ó‚É
+        iceCnt = 0; //ƒAƒCƒX‚ÌŒÂ”‚ğ‹ó‚É
+    }
+
+    public void RegisterRestoredIce(GameObject ice)
+    {
+        if (selectIceList == null)
+            selectIceList = new List<GameObject>();
+
+        selectIceList.Add(ice);
+        iceCnt++;
     }
 }

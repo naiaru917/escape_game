@@ -48,6 +48,7 @@ public class PauseManager : MonoBehaviour
             if (CupCakeGimmick.isPlayCupCakeGame)
             {
                 GameManager.isSceneMove = false;
+                PlayerController.isPlayerMove = false;
             }
 
             // カーソルを非表示＆固定
@@ -62,7 +63,7 @@ public class PauseManager : MonoBehaviour
             GameManager.isSceneMove = false;
             CameraController.isCameraMove = false;
 
-            //プレイヤーを不移動可能に
+            //プレイヤーを移動不可能に
             PlayerController.isPlayerMove = false;
 
             // カーソルを非表示＆固定を解除

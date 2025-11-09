@@ -8,20 +8,21 @@ public class ObjectState : ScriptableObject
     [System.Serializable]
     public class ObjectData
     {
-        public string objectName;           //ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆå
-        public int objectID;                //åŒã˜ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆåã®ãƒ—ãƒ¬ãƒãƒ–ã‚’ç”Ÿæˆã—ãŸã¨ãã«åˆ¤åˆ¥ã™ã‚‹ãŸã‚ã®ID
-        public bool isPrefab;               //ãƒ—ãƒ¬ãƒãƒ–ã‹ã‚‰ç”Ÿæˆã•ã‚ŒãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‹
-        public WorldName worldName;         //ã©ã®ã‚·ãƒ¼ãƒ³ã«å­˜åœ¨ã—ã¦ã„ã‚‹ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‹
-        public Vector3 position;            //ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ä½ç½®æƒ…å ±
-        public Quaternion rotation;         //ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®å›è»¢æƒ…å ±
-        public bool initialPositionSaved;   //åˆæœŸä½ç½®ã‚’ä¿å­˜ã—ãŸã‹ï¼ˆåˆå›ã®ã¿åˆæœŸä½ç½®ã‚’ä¿å­˜ï¼‰
+        public string objectName;           //ƒIƒuƒWƒFƒNƒg–¼
+        public int objectID;                //“¯‚¶ƒIƒuƒWƒFƒNƒg–¼‚ÌƒvƒŒƒnƒu‚ğ¶¬‚µ‚½‚Æ‚«‚É”»•Ê‚·‚é‚½‚ß‚ÌID
+        public bool isPrefab;               //ƒvƒŒƒnƒu‚©‚ç¶¬‚³‚ê‚½ƒIƒuƒWƒFƒNƒg‚©
+        public WorldName worldName;         //‚Ç‚ÌƒV[ƒ“‚É‘¶İ‚µ‚Ä‚¢‚éƒIƒuƒWƒFƒNƒg‚©
+        public Vector3 position;            //ƒIƒuƒWƒFƒNƒg‚ÌˆÊ’uî•ñ
+        public Quaternion rotation;         //ƒIƒuƒWƒFƒNƒg‚Ì‰ñ“]î•ñ
+        public bool isMovable = true;       //ƒIƒuƒWƒFƒNƒg‚ª“®‚¯‚é‚©‚Ç‚¤‚©
+        public bool shouldSave = true;      //•Û‘¶‘ÎÛ‚©‚Ç‚¤‚©
     }
 
-    public List<ObjectData> objectDataList = new List<ObjectData>();    //ãƒ‡ãƒ¼ã‚¿ã‚’ãƒªã‚¹ãƒˆå½¢å¼ã§ç™»éŒ²
+    public List<ObjectData> objectDataList = new List<ObjectData>();    //ƒf[ƒ^‚ğƒŠƒXƒgŒ`®‚Å“o˜^
 
-    public void SaveState(string objectName, int objectID, bool isPrefab, WorldName worldName, Vector3 position, Quaternion rotation)
+    public void SaveState(string objectName, int objectID, bool isPrefab, WorldName worldName, Vector3 position, Quaternion rotation, bool isMovable = true, bool shouldSave = true)
     {
-        // IDé‡è¤‡ãƒã‚§ãƒƒã‚¯å‡¦ç†ï¼ˆisPrefabãŒtrueã®ã¨ãã®ã¿ï¼‰
+        // IDd•¡ƒ`ƒFƒbƒNˆ—iisPrefab‚ªtrue‚Ì‚Æ‚«‚Ì‚İj
         if (isPrefab)
         {
             bool idConflict = objectDataList.Any(d =>
@@ -31,7 +32,7 @@ public class ObjectState : ScriptableObject
 
             if (idConflict)
             {
-                // è¢«ã£ã¦ãªã„IDã‚’æ¢ã—ã¦ä¸Šæ›¸ã
+                // ”í‚Á‚Ä‚È‚¢ID‚ğ’T‚µ‚Äã‘‚«
                 int newId = objectID;
                 while (objectDataList.Any(d =>
                     d.isPrefab &&
@@ -45,12 +46,12 @@ public class ObjectState : ScriptableObject
             }
         }
 
-        //ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ãƒ‡ãƒ¼ã‚¿ã‚’ä¿å­˜
+        //ƒIƒuƒWƒFƒNƒg‚Ìƒf[ƒ^‚ğ•Û‘¶
         var data = objectDataList.Find(d => d.objectName == objectName && d.objectID == objectID);
 
         if (data == null)
         {
-            //ãƒ‡ãƒ¼ã‚¿ãŒç©ºã®å ´åˆ
+            //ƒf[ƒ^‚ª‹ó‚Ìê‡
             data = new ObjectData
             {
                 objectName = objectName,
@@ -59,16 +60,18 @@ public class ObjectState : ScriptableObject
                 worldName = worldName,
                 position = position,
                 rotation = rotation,
-                initialPositionSaved = true
+                isMovable = isMovable,
+                shouldSave = true
             };
             objectDataList.Add(data);
         }
         else
         {
-            //æ—¢ã«ãƒ‡ãƒ¼ã‚¿ãŒã‚ã‚‹å ´åˆï¼ˆä½ç½®ãƒ»å›è»¢æƒ…å ±ã‚’æ›´æ–°ï¼‰
+            //Šù‚Éƒf[ƒ^‚ª‚ ‚éê‡iˆÊ’uE‰ñ“]î•ñ‚ğXVj
             data.position = position;
             data.rotation = rotation;
-            data.initialPositionSaved = true;
+            data.isMovable = isMovable;
+            data.shouldSave = shouldSave;
         }
 
 #if UNITY_EDITOR
@@ -77,30 +80,36 @@ public class ObjectState : ScriptableObject
 #endif
     }
 
-    public bool TryGetState(string objectName, int objectID, out Vector3 position, out Quaternion rotation)
+    public bool TryGetState(string objectName, int objectID, out Vector3 position, out Quaternion rotation, out bool isMovable)
     {
         var data = objectDataList.Find(d => d.objectName == objectName && d.objectID == objectID);
         if (data != null)
         {
             position = data.position;
             rotation = data.rotation;
+            isMovable = data.isMovable;
             return true;
         }
 
         position = Vector3.zero;
         rotation = Quaternion.identity;
+        isMovable = true;
         return false;
     }
 
-    public bool HasInitialPosition(string objectName, int objectID)
+    public void RemoveState(string objectName, int objectID)
     {
-        var data = objectDataList.Find(d => d.objectName == objectName && d.objectID == objectID);
-        return data != null && data.initialPositionSaved;
+        objectDataList.RemoveAll(d => d.objectName == objectName && d.objectID == objectID);
+
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(this);
+        UnityEditor.AssetDatabase.SaveAssets();
+#endif
     }
+
 
     public void ResetAllData()
     {
-        //Debug.Log("ObjectStateã®ãƒ‡ãƒ¼ã‚¿ã‚’ãƒªã‚»ãƒƒãƒˆã—ã¾ã™");
         objectDataList.Clear();
     }
 }

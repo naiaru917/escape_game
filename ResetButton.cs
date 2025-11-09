@@ -1,17 +1,20 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ResetButton : MonoBehaviour
 {
-    public GameObject CupA, CupB, CupC, CupD; // 各カップのゲームオブジェクト
+    public GameObject CupA, CupB, CupC, CupD, CupE, CupF; // 各カップのゲームオブジェクト
+    private Vector3 start_posA, start_posB, start_posC, start_posD, start_posE, start_posF;
+    [SerializeField] private teaCupGimmick gimmick;
 
-    //カップの初期位置
-    public static Vector3
-        start_posA = new Vector3(-3f, 3f, 0f),
-        start_posB = new Vector3(-6f, 3f, 9f),
-        start_posC = new Vector3(0f, 3f, 12f),
-        start_posD = new Vector3(6f, 3f, 6f);
+    void Start()
+    {
+        start_posA = gimmick.StartPosA.transform.position;
+        start_posB = gimmick.StartPosB.transform.position;
+        start_posC = gimmick.StartPosC.transform.position;
+        start_posD = gimmick.StartPosD.transform.position;
+        start_posE = gimmick.StartPosE.transform.position;
+        start_posF = gimmick.StartPosF.transform.position;
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -21,6 +24,8 @@ public class ResetButton : MonoBehaviour
             CupB.transform.position = start_posB;
             CupC.transform.position = start_posC;
             CupD.transform.position = start_posD;
+            CupE.transform.position = start_posE;
+            CupF.transform.position = start_posF;
             Debug.Log("Reset");
         }
     }

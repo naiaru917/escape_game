@@ -2,21 +2,21 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    [SerializeField] private float mouseSensitivity = 300f; // ãƒã‚¦ã‚¹æ„Ÿåº¦ï¼ˆå¾Œã§è¨­å®šç”»é¢ã§å¤‰æ›´å¯èƒ½ï¼‰
+    [SerializeField] private float mouseSensitivity = 300f; // ƒ}ƒEƒXŠ´“xiŒã‚Åİ’è‰æ–Ê‚Å•ÏX‰Â”\j
     private float xRotation = 0;
-    public static bool isCameraMove = true;    //è¦–ç‚¹ç§»å‹•å¯èƒ½ã‹
+    public static bool isCameraMove = true;    //‹“_ˆÚ“®‰Â”\‚©
 
 
     void Start()
     {
-        // ã‚«ãƒ¼ã‚½ãƒ«ã‚’éè¡¨ç¤ºï¼†å›ºå®š
+        // ƒJ[ƒ\ƒ‹‚ğ”ñ•\¦•ŒÅ’è
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
     public void SetInitialXRotation(float value)
     {
-        // -90ï½90ã®ç¯„å›²ã«æ­£è¦åŒ–
+        // -90`90‚Ì”ÍˆÍ‚É³‹K‰»
         if (value > 180f) value -= 360f;
         xRotation = Mathf.Clamp(value, -90f, 90f);
         transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
@@ -26,21 +26,21 @@ public class CameraController : MonoBehaviour
     {
         if (isCameraMove == true)
         {
-            // ãƒã‚¦ã‚¹ã®å…¥åŠ›ã‚’å–å¾—
+            // ƒ}ƒEƒX‚Ì“ü—Í‚ğæ“¾
             float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
             float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
-            // ç¸¦æ–¹å‘ã®å›è»¢ï¼ˆã‚«ãƒ¡ãƒ©ã®ä¸Šä¸‹ï¼‰
+            // c•ûŒü‚Ì‰ñ“]iƒJƒƒ‰‚Ìã‰ºj
             xRotation -= mouseY;
-            xRotation = Mathf.Clamp(xRotation, -90f, 90f); // ä¸Šä¸‹90åº¦ã¾ã§åˆ¶é™
+            xRotation = Mathf.Clamp(xRotation, -90f, 90f); // ã‰º90“x‚Ü‚Å§ŒÀ
 
-            // å›è»¢ã‚’é©ç”¨
+            // ‰ñ“]‚ğ“K—p
             transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
-            transform.parent.Rotate(Vector3.up * mouseX); // è¦ªã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆï¼ˆãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ï¼‰ã‚’å·¦å³ã«å›è»¢
+            transform.parent.Rotate(Vector3.up * mouseX); // eƒIƒuƒWƒFƒNƒgiƒvƒŒƒCƒ„[j‚ğ¶‰E‚É‰ñ“]
         }
     }
 
-    // è¨­å®šç”»é¢ã§æ„Ÿåº¦ã‚’å¤‰æ›´ã™ã‚‹ãŸã‚ã®é–¢æ•°
+    // İ’è‰æ–Ê‚ÅŠ´“x‚ğ•ÏX‚·‚é‚½‚ß‚ÌŠÖ”
     public void SetMouseSensitivity(float sensitivity)
     {
         mouseSensitivity = sensitivity;

@@ -7,182 +7,215 @@ public class teaCupGimmick : MonoBehaviour
 {
     private Camera mainCamera;
 
-    public Transform stage; //stageBlockã‚’ã¾ã¨ã‚ã¦ã„ã‚‹è¦ªã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
-    private Transform[,] stageBlock = new Transform[5, 5]; // 5x5ã®ã‚°ãƒªãƒƒãƒ‰
-    public LayerMask groundLayer; // 5Ã—5ã®åœŸå°ã®ãƒ¬ã‚¤ãƒ¤ãƒ¼
+    public Transform stage; //stageBlock‚ğ‚Ü‚Æ‚ß‚Ä‚¢‚éeƒIƒuƒWƒFƒNƒg
+    private Transform[,] stageBlock = new Transform[8, 8]; // 5x5‚ÌƒOƒŠƒbƒh
+    public LayerMask groundLayer; // 5~5‚Ì“y‘ä‚ÌƒŒƒCƒ„[
 
-    public GameObject CupA, CupB, CupC, CupD; // å„ã‚«ãƒƒãƒ—ã®ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
+    public GameObject CupA, CupB, CupC, CupD, CupE, CupF; // ŠeƒJƒbƒv‚ÌƒQ[ƒ€ƒIƒuƒWƒFƒNƒg
+    public GameObject StartPosA, StartPosB, StartPosC, StartPosD, StartPosE, StartPosF;     // Å‰‚É‹î‚ğ”z’u‚µ‚½‚¢ƒ}ƒX
+    public GameObject GoalPosA, GoalPosB, GoalPosC, GoalPosD, GoalPosE, GoalPosF;           // ³‰ğ‚Ì‹î‚ÌˆÊ’uƒ}ƒX
 
-    private GameObject selectCup; //é¸æŠä¸­ã®ã‚«ãƒƒãƒ—
-    private Vector2Int selectCup_pos;ã€€//é¸æŠã—ãŸã‚«ãƒƒãƒ—ã®ä½ç½®
+    private GameObject selectCup; //‘I‘ğ’†‚ÌƒJƒbƒv
+    private Vector2Int selectCup_pos;@//‘I‘ğ‚µ‚½ƒJƒbƒv‚ÌˆÊ’u
 
-    private List<GameObject> allCups = new List<GameObject>(); // ã™ã¹ã¦ã®ã‚«ãƒƒãƒ—
-    private List<GameObject> otherCups = new List<GameObject>(); // é¸æŠã—ã¦ã„ãªã„ã®ã‚«ãƒƒãƒ—
-    List<Vector2Int> otherCups_pos = new List<Vector2Int>(); // é¸æŠã—ã¦ã„ãªã„ã®ã‚«ãƒƒãƒ—
+    private List<GameObject> allCups = new List<GameObject>(); // ‚·‚×‚Ä‚ÌƒJƒbƒv
+    private List<GameObject> otherCups = new List<GameObject>(); // ‘I‘ğ‚µ‚Ä‚¢‚È‚¢‚ÌƒJƒbƒv
+    List<Vector2Int> otherCups_pos = new List<Vector2Int>(); // ‘I‘ğ‚µ‚Ä‚¢‚È‚¢‚ÌƒJƒbƒv
 
-    private string direction;   //ç§»å‹•ã—ãŸã„æ–¹å‘
-    private Vector2Int target_pos;  //ç§»å‹•äºˆå®šã®ãƒã‚¹
-    private int moveCnt;    //ç§»å‹•å¯èƒ½ãªãƒã‚¹æ•°
+    private string direction;   //ˆÚ“®‚µ‚½‚¢•ûŒü
+    private Vector2Int target_pos;  //ˆÚ“®—\’è‚Ìƒ}ƒX
+    private int moveCnt;    //ˆÚ“®‰Â”\‚Èƒ}ƒX”
 
-    private Vector3 selectCup_posV3;   //é¸æŠã—ãŸã‚«ãƒƒãƒ—ã®åº§æ¨™
-    private Vector3 target_posV3;   //ç§»å‹•ã—ãŸã„ç›®çš„ã®åº§æ¨™
+    private Vector3 selectCup_posV3;   //‘I‘ğ‚µ‚½ƒJƒbƒv‚ÌÀ•W
+    private Vector3 target_posV3;   //ˆÚ“®‚µ‚½‚¢–Ú“I‚ÌÀ•W
 
-    private float moveSpeed = 3f; //ã‚«ãƒƒãƒ—ã®ç§»å‹•é€Ÿåº¦
-    private bool isMove;    //ã‚«ãƒƒãƒ—ã®ç§»å‹•ã‚’è¡Œã£ã¦ã„ã‚‹ã‹ã®åˆ¤å®š
-    private bool isDo;      //è¤‡æ•°ã®ã‚«ãƒƒãƒ—ã‚’é¸æŠã•ã›ãªã„å‡¦ç†
+    private float moveSpeed = 10f; //ƒJƒbƒv‚ÌˆÚ“®‘¬“x
+    private bool isCupMove;    //ƒJƒbƒv‚ÌˆÚ“®‚ğs‚Á‚Ä‚¢‚é‚©‚Ì”»’è
+    private bool isDo;      //•¡”‚ÌƒJƒbƒv‚ğ‘I‘ğ‚³‚¹‚È‚¢ˆ—
 
-    //ã‚«ãƒƒãƒ—ã®åˆæœŸä½ç½®
-    public static Vector3
-        start_posA = new Vector3(-3f, 3f, 0f),
-        start_posB = new Vector3(-6f, 3f, 9f),
-        start_posC = new Vector3(0f, 3f, 12f),
-        start_posD = new Vector3(6f, 3f, 6f);
 
-    //ã‚«ãƒƒãƒ—ã®ã‚´ãƒ¼ãƒ«ä½ç½®
-    public static Vector3
-        goal_posA = new Vector3(-6f, 1.25f, 12f),
-        goal_posB = new Vector3(6f, 1.25f, 6f),
-        goal_posC = new Vector3(-6f, 1.25f, 3f),
-        goal_posD = new Vector3(3f, 1.25f, 0f);
+    //ƒJƒbƒv‚ÌƒS[ƒ‹ˆÊ’u
+    public static Vector3 goal_posA, goal_posB, goal_posC, goal_posD, goal_posE, goal_posF;
+
+    public GameObject Gate; //Ÿ‚ÌƒXƒe[ƒW‚És‚­‚½‚ß‚ÌƒQ[ƒg
+    public static bool isCleaTeaCupGim = false; //Gimmick‚ğƒNƒŠƒA‚µ‚½‚©
+    public static bool KeyFlag = false;
+    [SerializeField] private float rayDistance = 2.5f; // ƒŒƒC‚ğ”ò‚Î‚·Å‘å‹——£
+
 
     void Start()
     {
         mainCamera = Camera.main;
 
-        //ãƒã‚¹ç›®ã®å–å¾—
+        // ƒ}ƒX–Ú‚Ìæ“¾
         InitializeGrid();
 
-        // ã‚«ãƒƒãƒ—4ã¤ã‚’å–å¾—ï¼ˆã‚¿ã‚° "Cup" ã‹ã‚‰å–å¾—ï¼‰
+        // ƒJƒbƒv4‚Â‚ğæ“¾iƒ^ƒO "Cup" ‚©‚çæ“¾j
         allCups = GameObject.FindGameObjectsWithTag("teaCup").ToList();
         otherCups = allCups;
 
+        selectCup = null;
+
         isDo = true;
 
-        CupA.transform.position = start_posA;
-        CupB.transform.position = start_posB;
-        CupC.transform.position = start_posC;
-        CupD.transform.position = start_posD;
+        // ‰ŠúˆÊ’u‚Ìİ’è
+        CupA.transform.position = StartPosA.transform.position;
+        CupB.transform.position = StartPosB.transform.position;
+        CupC.transform.position = StartPosC.transform.position;
+        CupD.transform.position = StartPosD.transform.position;
+        CupE.transform.position = StartPosE.transform.position;
+        CupF.transform.position = StartPosF.transform.position;
+
+        // ƒS[ƒ‹ˆÊ’u‚Ìİ’è
+        goal_posA = GoalPosA.transform.position;
+        goal_posB = GoalPosB.transform.position;
+        goal_posC = GoalPosC.transform.position;
+        goal_posD = GoalPosD.transform.position;
+        goal_posE = GoalPosE.transform.position;
+        goal_posF = GoalPosF.transform.position;
+
+        //Ÿ‚Ì•”‰®‚ÖˆÚ“®‚·‚é‚½‚ß‚ÌƒQ[ƒg‚ğ”ñ•\¦‚É
+        if (GameManager.isGate == true)
+        {
+            Gate.gameObject.SetActive(true);
+        }
+        else
+        {
+            Gate.gameObject.SetActive(false);
+        }   
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (isDo == true)
+        if (isDo == true && GameManager.isPaused == false)
         {
-
-
             if (Input.GetMouseButtonDown(0))
             {
-                //ã‚«ãƒƒãƒ—ã‚’é¸æŠ
+                //ƒJƒbƒv‚ğ‘I‘ğ
                 SelectCup();
 
-                //ã‚«ãƒƒãƒ—ãŒé¸æŠã•ã‚Œã¦ã„ã‚‹ã¨ã
+                //ƒJƒbƒv‚ª‘I‘ğ‚³‚ê‚Ä‚¢‚é‚Æ‚«
                 if (selectCup != null)
                 {
-                    // otherCupsã‹ã‚‰é¸æŠã—ãŸã‚«ãƒƒãƒ—ã‚’é™¤å¤–
+                    // otherCups‚©‚ç‘I‘ğ‚µ‚½ƒJƒbƒv‚ğœŠO
                     otherCups.Remove(selectCup);
 
-                    //é¸æŠã—ãŸã‚«ãƒƒãƒ—ã®ä½ç½®æƒ…å ±ã‚’å–å¾—
+                    //‘I‘ğ‚µ‚½ƒJƒbƒv‚ÌˆÊ’uî•ñ‚ğæ“¾
                     selectCup_pos = blockNameToVec2Int(GetBlockName(selectCup));
 
-                    //é¸æŠã—ã¦ã„ãªã„ã‚«ãƒƒãƒ—ã®ä½ç½®æƒ…å ±ã‚’å–å¾—
+                    //‘I‘ğ‚µ‚Ä‚¢‚È‚¢ƒJƒbƒv‚ÌˆÊ’uî•ñ‚ğæ“¾
                     GetOtherCupsPos();
 
-                    //ç§»å‹•ã—ãŸã„æ–¹å‘ã‚’å–å¾—
+                    //ˆÚ“®‚µ‚½‚¢•ûŒü‚ğæ“¾
                     direction = GetDirection(selectCup.transform.position);
 
-                    //ä½•ãƒã‚¹ç§»å‹•ã§ãã‚‹ã‹è¨ˆç®—
+                    //‰½ƒ}ƒXˆÚ“®‚Å‚«‚é‚©ŒvZ
                     CntMove(direction);
 
-                    //ç§»å‹•å…ˆã®åº§æ¨™ã‚’å–å¾—
+                    //ˆÚ“®æ‚ÌÀ•W‚ğæ“¾
                     getTargetPos(target_pos);
 
-                    //ç§»å‹•ã‚’é–‹å§‹
-                    isMove = true;
+                    //ˆÚ“®‚ğŠJn
+                    isCupMove = true;
                 }
 
-                // otherCupã‚’ãƒªã‚»ãƒƒãƒˆ
+                // otherCup‚ğƒŠƒZƒbƒg
                 otherCups.Add(selectCup);
 
-                // moveCntã‚’ãƒªã‚»ãƒƒãƒˆ
+                // moveCnt‚ğƒŠƒZƒbƒg
                 moveCnt = 0;
 
             }
         }
 
-        if (isMove == true)
+        if (isCupMove == true)
         {
-            //é¸æŠã—ãŸã‚«ãƒƒãƒ—ã‚’ç§»å‹•
+            //‘I‘ğ‚µ‚½ƒJƒbƒv‚ğˆÚ“®
             moveCup();
         }
 
         if (selectCup != null)
         {
-            //ã‚«ãƒƒãƒ—ã®ç§»å‹•ãŒçµ‚ã‚ã£ãŸã‚‰
+            //ƒJƒbƒv‚ÌˆÚ“®‚ªI‚í‚Á‚½‚ç
             if (selectCup.transform.position == target_posV3)
             {
                 isDo = true;
             }
         }
 
+        //³‚µ‚¢ˆÊ’u‚ÉƒJƒbƒv‚ª’u‚©‚ê‚½‚ç
         if (CupA.transform.position == goal_posA && CupB.transform.position == goal_posB &&
             CupC.transform.position == goal_posC && CupD.transform.position == goal_posD)
         {
-            Debug.Log("GameClear!!");
+            //ƒQ[ƒ€ƒNƒŠƒA
+            isCleaTeaCupGim = true;
         }
+
+        if(KeyFlag==false)
+        {
+            if (isCleaTeaCupGim && BookController.isGetKey)
+            {
+                Debug.Log("ƒJƒM‚ğ“üè‚µ‚½");
+                Gate.gameObject.SetActive(true);
+                KeyFlag = true;
+                GameManager.isGate = true;
+            }
+        }        
     }
 
-    //ãƒã‚¹ã®æƒ…å ±ã‚’å–å¾—(ãƒã‚¹åã¨ãã®transform)
+    //ƒ}ƒX‚Ìî•ñ‚ğæ“¾(ƒ}ƒX–¼‚Æ‚»‚Ìtransform)
     void InitializeGrid()
     {
         foreach (Transform child in stage)
         {
-            if (child != stage) // è¦ªã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆè‡ªèº«ã‚’é™¤å¤–
+            if (child != stage) // eƒIƒuƒWƒFƒNƒg©g‚ğœŠO
             {
                 char row = child.name[0]; // A, B, C, D, E
-                int col = int.Parse(child.name.Substring(1)); // 1, 2, 3...ï¼ˆ1-basedï¼‰
+                int col = int.Parse(child.name.Substring(1)); // 1, 2, 3...i1-basedj
 
-                // 0ãƒ™ãƒ¼ã‚¹ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã«å¤‰æ›
-                int rowIndex = row - 'A'; // A â†’ 0, B â†’ 1, ..., E â†’ 4
-                int colIndex = col - 1;   // 1 â†’ 0, 2 â†’ 1, ..., 5 â†’ 4
-                
+                // 0ƒx[ƒX‚ÌƒCƒ“ƒfƒbƒNƒX‚É•ÏŠ·
+                int rowIndex = row - 'A'; // A ¨ 0, B ¨ 1, ..., E ¨ 4
+                int colIndex = col - 1;   // 1 ¨ 0, 2 ¨ 1, ..., 5 ¨ 4
+
                 stageBlock[rowIndex, colIndex] = child;
             }
         }
     }
 
-    // ç”»é¢ä¸­å¤®ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æ¤œå‡ºã—ã€ã‚«ãƒƒãƒ—ã®é¸æŠã‚’å‡¦ç†
+    // ‰æ–Ê’†‰›‚ÌƒIƒuƒWƒFƒNƒg‚ğŒŸo‚µAƒJƒbƒv‚Ì‘I‘ğ‚ğˆ—
     void SelectCup()
     {
-        // ç”»é¢ä¸­å¤®ã®ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã‚’å–å¾—
+        // ‰æ–Ê’†‰›‚ÌƒXƒNƒŠ[ƒ“À•W‚ğæ“¾
         Vector3 centerScreenPosition = new Vector3(Screen.width / 2, Screen.height / 2, 0);
 
-        // ç”»é¢ä¸­å¤®ã®ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™ã‚’ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™ã«å¤‰æ›
+        // ‰æ–Ê’†‰›‚ÌƒXƒNƒŠ[ƒ“À•W‚ğƒ[ƒ‹ƒhÀ•W‚É•ÏŠ·
         Ray ray = mainCamera.ScreenPointToRay(centerScreenPosition);
         RaycastHit hit;
 
-        // ãƒ¬ã‚¤ãŒã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«å½“ãŸã£ãŸå ´åˆã®ã¿å‡¦ç†ã‚’å®Ÿè¡Œ
-        if (Physics.Raycast(ray, out hit))
+        // ƒŒƒC‚ªƒIƒuƒWƒFƒNƒg‚É“–‚½‚Á‚½ê‡‚Ì‚İˆ—‚ğÀs
+        if (Physics.Raycast(ray, out hit, rayDistance))
         {
-            // hit.collider ãŒ null ã§ãªã„ã‹ãƒã‚§ãƒƒã‚¯
+            // hit.collider ‚ª null ‚Å‚È‚¢‚©ƒ`ƒFƒbƒN
             if (hit.collider != null && hit.collider.CompareTag("teaCup"))
             {
-                // ã‚¯ãƒªãƒƒã‚¯ã—ãŸã‚«ãƒƒãƒ—ã®GameObjectã‚’ä¿å­˜
+                // ƒNƒŠƒbƒN‚µ‚½ƒJƒbƒv‚ÌGameObject‚ğ•Û‘¶
                 selectCup = hit.collider.gameObject;
                 isDo = false;
             }
         }
+
     }
 
-    // ã‚«ãƒ¡ãƒ©ã‹ã‚‰ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã¸ã®æ–¹å‘ã‚’åˆ¤å®š
+    // ƒJƒƒ‰‚©‚çƒIƒuƒWƒFƒNƒg‚Ö‚Ì•ûŒü‚ğ”»’è
     private string GetDirection(Vector3 objectPosition)
     {
-        // ã‚«ãƒ¡ãƒ©ã‹ã‚‰ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã¸ã®ãƒ™ã‚¯ãƒˆãƒ«ã‚’è¨ˆç®—
+        // ƒJƒƒ‰‚©‚çƒIƒuƒWƒFƒNƒg‚Ö‚ÌƒxƒNƒgƒ‹‚ğŒvZ
         Vector3 direction = objectPosition - mainCamera.transform.position;
 
         if (Mathf.Abs(direction.x) > Mathf.Abs(direction.z))
         {
-            // Xè»¸æ–¹å‘ãŒå¼·ã„å ´åˆ
+            // X²•ûŒü‚ª‹­‚¢ê‡
             if (direction.x > 0)
                 return "X+";
             else
@@ -190,7 +223,7 @@ public class teaCupGimmick : MonoBehaviour
         }
         else
         {
-            // Zè»¸æ–¹å‘ãŒå¼·ã„å ´åˆ
+            // Z²•ûŒü‚ª‹­‚¢ê‡
             if (direction.z > 0)
                 return "Z+";
             else
@@ -198,82 +231,82 @@ public class teaCupGimmick : MonoBehaviour
         }
     }
 
-    // ã‚«ãƒƒãƒ—ã®ä½ç½®ã‹ã‚‰ä¸‹æ–¹å‘ã«Rayã‚’é£›ã°ã—ã€ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆåã‚’è¿”ã™
+    // ƒJƒbƒv‚ÌˆÊ’u‚©‚ç‰º•ûŒü‚ÉRay‚ğ”ò‚Î‚µAƒIƒuƒWƒFƒNƒg–¼‚ğ•Ô‚·
     string GetBlockName(GameObject cup)
     {
         RaycastHit hit;
 
-        // ã‚«ãƒƒãƒ—ã®ä½ç½®ã‹ã‚‰ä¸‹æ–¹å‘ã«Rayã‚’ç™ºå°„
+        // ƒJƒbƒv‚ÌˆÊ’u‚©‚ç‰º•ûŒü‚ÉRay‚ğ”­Ë
         Ray ray = new Ray(cup.transform.position + Vector3.up * 1.0f, Vector3.down);
 
-        // RayãŒä½•ã‹ã«å½“ãŸã£ãŸã‹ã©ã†ã‹ã‚’ç¢ºèª
+        // Ray‚ª‰½‚©‚É“–‚½‚Á‚½‚©‚Ç‚¤‚©‚ğŠm”F
         if (Physics.Raycast(ray, out hit, 100f, groundLayer))
         {
-            return hit.collider.gameObject.name; // ãƒ’ãƒƒãƒˆã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®åå‰ã‚’è¿”ã™
+            return hit.collider.gameObject.name; // ƒqƒbƒg‚µ‚½ƒIƒuƒWƒFƒNƒg‚Ì–¼‘O‚ğ•Ô‚·
         }
         else
         {
-            return "No block hit"; // ãƒ’ãƒƒãƒˆã—ãªã‹ã£ãŸå ´åˆ
+            return "No block hit"; // ƒqƒbƒg‚µ‚È‚©‚Á‚½ê‡
         }
     }
 
-    // ãƒ–ãƒ­ãƒƒã‚¯åã‹ã‚‰åº§æ¨™å½¢å¼ã«å¤‰æ›ã™ã‚‹
+    // ƒuƒƒbƒN–¼‚©‚çÀ•WŒ`®‚É•ÏŠ·‚·‚é
     Vector2Int blockNameToVec2Int(string blockName)
     {
         if (blockName == "No block hit")
         {
-            return Vector2Int.zero; // ãƒ’ãƒƒãƒˆã—ãªã‹ã£ãŸå ´åˆ
+            return Vector2Int.zero; // ƒqƒbƒg‚µ‚È‚©‚Á‚½ê‡
         }
 
-        // åå‰ã‹ã‚‰è¡Œã¨åˆ—ã‚’å–å¾—
+        // –¼‘O‚©‚çs‚Æ—ñ‚ğæ“¾
         char row = blockName[0]; // A, B, C, D, E
-        int col = int.Parse(blockName.Substring(1)); // 1, 2, 3...ï¼ˆ1-basedï¼‰
+        int col = int.Parse(blockName.Substring(1)); // 1, 2, 3...i1-basedj
 
-        // è¡Œã¨åˆ—ã‚’0ãƒ™ãƒ¼ã‚¹ã«å¤‰æ›
-        int rowIndex = row - 'A'; // A â†’ 0, B â†’ 1, ..., E â†’ 4
-        int colIndex = col - 1;   // 1 â†’ 0, 2 â†’ 1, ..., 5 â†’ 4
+        // s‚Æ—ñ‚ğ0ƒx[ƒX‚É•ÏŠ·
+        int rowIndex = row - 'A'; // A ¨ 0, B ¨ 1, ..., E ¨ 4
+        int colIndex = col - 1;   // 1 ¨ 0, 2 ¨ 1, ..., 5 ¨ 4
 
-        // åº§æ¨™å½¢å¼ã§è¿”ã™
-        return new Vector2Int(rowIndex, colIndex); // Vector2å½¢å¼ã§è¿”ã™
+        // À•WŒ`®‚Å•Ô‚·
+        return new Vector2Int(rowIndex, colIndex); // Vector2Œ`®‚Å•Ô‚·
     }
 
     void GetOtherCupsPos()
     {
-        // åº§æ¨™ãƒªã‚¹ãƒˆã‚’ã‚¯ãƒªã‚¢
+        // À•WƒŠƒXƒg‚ğƒNƒŠƒA
         otherCups_pos.Clear();
 
-        // å„ã‚«ãƒƒãƒ—ã®åº§æ¨™ã‚’å–å¾—
+        // ŠeƒJƒbƒv‚ÌÀ•W‚ğæ“¾
         foreach (GameObject cup in otherCups)
         {
-            if (cup != null) // å¿µã®ãŸã‚Nullãƒã‚§ãƒƒã‚¯
+            if (cup != null) // ”O‚Ì‚½‚ßNullƒ`ƒFƒbƒN
             {
-                string blockName = GetBlockName(cup); // ã‚²ãƒ¼ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆåã‹ã‚‰ãƒ–ãƒ­ãƒƒã‚¯åã‚’å–å¾—
-                Vector2Int position = blockNameToVec2Int(blockName); // ãƒ–ãƒ­ãƒƒã‚¯åã‚’Vector2Intã®åº§æ¨™ã«å¤‰æ›
-                otherCups_pos.Add(position); // åº§æ¨™ãƒªã‚¹ãƒˆã«è¿½åŠ 
+                string blockName = GetBlockName(cup); // ƒQ[ƒ€ƒIƒuƒWƒFƒNƒg–¼‚©‚çƒuƒƒbƒN–¼‚ğæ“¾
+                Vector2Int position = blockNameToVec2Int(blockName); // ƒuƒƒbƒN–¼‚ğVector2Int‚ÌÀ•W‚É•ÏŠ·
+                otherCups_pos.Add(position); // À•WƒŠƒXƒg‚É’Ç‰Á
             }
         }
     }
 
     int CntMove(string actionDirection)
     {
-        Vector2Int currentPos = selectCup_pos;  // é¸æŠã•ã‚ŒãŸã‚«ãƒƒãƒ—ã®ç¾åœ¨ã®åº§æ¨™
-        Vector2Int NextPos = currentPos;  // ã‚«ãƒƒãƒ—ã®éš£ã®åº§æ¨™
+        Vector2Int currentPos = selectCup_pos;  // ‘I‘ğ‚³‚ê‚½ƒJƒbƒv‚ÌŒ»İ‚ÌÀ•W
+        Vector2Int NextPos = currentPos;  // ƒJƒbƒv‚Ì—×‚ÌÀ•W
 
         target_pos = selectCup_pos;
-        // ã‚¢ã‚¯ã‚·ãƒ§ãƒ³æ–¹å‘ã«ã‚ˆã£ã¦åˆ¤å®šã‚’åˆ†å²
+        // ƒAƒNƒVƒ‡ƒ“•ûŒü‚É‚æ‚Á‚Ä”»’è‚ğ•ªŠò
         switch (actionDirection)
         {
-            case "X+": // å³æ–¹å‘ï¼ˆX+ï¼‰ï¼šç¾åœ¨ã®yåº§æ¨™ã‹ã‚‰y+=1ã®ä½ç½®ã«ä»–ã®ã‚«ãƒƒãƒ—ãŒå­˜åœ¨ã—ã¦ã„ãªã„ã‹ã‚’åˆ¤å®š
+            case "X+": // ‰E•ûŒüiX+jFŒ»İ‚ÌyÀ•W‚©‚çy+=1‚ÌˆÊ’u‚É‘¼‚ÌƒJƒbƒv‚ª‘¶İ‚µ‚Ä‚¢‚È‚¢‚©‚ğ”»’è
 
-                for (int i = (int)NextPos.y; i < 4; i++)
+                for (int i = (int)NextPos.y; i < 7; i++)
                 {
-                    NextPos.y += 1; // ç¾åœ¨ã®yåº§æ¨™ + 1
+                    NextPos.y += 1; // Œ»İ‚ÌyÀ•W + 1
 
-                    for (int j = 0; j < otherCups.Count; j++)
+                    for (int j = 0; j < otherCups_pos.Count; j++)
                     {
                         if (NextPos == otherCups_pos[j])
                         {
-                            return moveCnt = 0; // ç§»å‹•ä¸å¯
+                            return moveCnt = 0; // ˆÚ“®•s‰Â
                         }
                     }
                     moveCnt++;
@@ -283,17 +316,17 @@ public class teaCupGimmick : MonoBehaviour
                 return moveCnt;
 
 
-            case "X-": // å·¦æ–¹å‘ï¼ˆX-ï¼‰ï¼šç¾åœ¨ã®yåº§æ¨™ã‹ã‚‰y-=1ã®ä½ç½®ã«ä»–ã®ã‚«ãƒƒãƒ—ãŒå­˜åœ¨ã—ã¦ã„ãªã„ã‹ã‚’åˆ¤å®š
+            case "X-": // ¶•ûŒüiX-jFŒ»İ‚ÌyÀ•W‚©‚çy-=1‚ÌˆÊ’u‚É‘¼‚ÌƒJƒbƒv‚ª‘¶İ‚µ‚Ä‚¢‚È‚¢‚©‚ğ”»’è
 
                 for (int i = (int)NextPos.y; i > 0; i--)
                 {
-                    NextPos.y -= 1; // ç¾åœ¨ã®yåº§æ¨™ - 1
+                    NextPos.y -= 1; // Œ»İ‚ÌyÀ•W - 1
 
-                    for (int j = 0; j < otherCups.Count; j++)
+                    for (int j = 0; j < otherCups_pos.Count; j++)
                     {
                         if (NextPos == otherCups_pos[j])
                         {
-                            return moveCnt = 0; // ç§»å‹•ä¸å¯
+                            return moveCnt = 0; // ˆÚ“®•s‰Â
                         }
                     }
                     moveCnt++;
@@ -302,17 +335,17 @@ public class teaCupGimmick : MonoBehaviour
                 return moveCnt;
 
 
-            case "Z+": // æ‰‹å‰æ–¹å‘ï¼ˆZ+ï¼‰ï¼šç¾åœ¨ã®xåº§æ¨™ã‹ã‚‰x-=1ã®ä½ç½®ã«ä»–ã®ã‚«ãƒƒãƒ—ã®xåº§æ¨™ãŒå­˜åœ¨ã—ã¦ã„ãªã„ã‹ã‚’åˆ¤å®š
+            case "Z+": // è‘O•ûŒüiZ+jFŒ»İ‚ÌxÀ•W‚©‚çx-=1‚ÌˆÊ’u‚É‘¼‚ÌƒJƒbƒv‚ÌxÀ•W‚ª‘¶İ‚µ‚Ä‚¢‚È‚¢‚©‚ğ”»’è
 
                 for (int i = (int)NextPos.x; i > 0; i--)
                 {
-                    NextPos.x -= 1; // ç¾åœ¨ã®xåº§æ¨™ - 1
+                    NextPos.x -= 1; // Œ»İ‚ÌxÀ•W - 1
 
-                    for (int j = 0; j < otherCups.Count; j++)
+                    for (int j = 0; j < otherCups_pos.Count; j++)
                     {
                         if (NextPos == otherCups_pos[j])
                         {
-                            return moveCnt = 0; // ç§»å‹•ä¸å¯
+                            return moveCnt = 0; // ˆÚ“®•s‰Â
                         }
                     }
                     moveCnt++;
@@ -321,17 +354,17 @@ public class teaCupGimmick : MonoBehaviour
                 return moveCnt;
 
 
-            case "Z-": // å¥¥æ–¹å‘ï¼ˆZ-ï¼‰ï¼šç¾åœ¨ã®xåº§æ¨™ã‹ã‚‰x+=1ã®ä½ç½®ã«ä»–ã®ã‚«ãƒƒãƒ—ã®xåº§æ¨™ãŒå­˜åœ¨ã—ã¦ã„ãªã„ã‹ã‚’åˆ¤å®š
+            case "Z-": // ‰œ•ûŒüiZ-jFŒ»İ‚ÌxÀ•W‚©‚çx+=1‚ÌˆÊ’u‚É‘¼‚ÌƒJƒbƒv‚ÌxÀ•W‚ª‘¶İ‚µ‚Ä‚¢‚È‚¢‚©‚ğ”»’è
 
-                for (int i = (int)NextPos.x; i < 4; i++)
+                for (int i = (int)NextPos.x; i < 7; i++)
                 {
-                    NextPos.x += 1; // ç¾åœ¨ã®xåº§æ¨™ + 1
+                    NextPos.x += 1; // Œ»İ‚ÌxÀ•W + 1
 
-                    for (int j = 0; j < otherCups.Count; j++)
+                    for (int j = 0; j < otherCups_pos.Count; j++)
                     {
                         if (NextPos == otherCups_pos[j])
                         {
-                            return moveCnt = 0; // ç§»å‹•ä¸å¯
+                            return moveCnt = 0; // ˆÚ“®•s‰Â
                         }
                     }
                     moveCnt++;
@@ -340,34 +373,34 @@ public class teaCupGimmick : MonoBehaviour
                 return moveCnt;
 
             default:
-                return moveCnt = 0; // ä¸æ˜ãªæ–¹å‘ã®å ´åˆã¯ç§»å‹•ä¸å¯
+                return moveCnt = 0; // •s–¾‚È•ûŒü‚Ìê‡‚ÍˆÚ“®•s‰Â
         }
     }
 
     void moveCup()
     {
+        GameManager.isSceneMove = false;
         selectCup_posV3 = selectCup.transform.position;
 
-        // æ–°ã—ã„åº§æ¨™ã‚’è¨ˆç®—
+        // V‚µ‚¢À•W‚ğŒvZ
         Vector3 newDirection = target_posV3 - selectCup_posV3;
-        // ä¸€å®šã®é€Ÿåº¦ã§ç§»å‹•
-        if (newDirection.magnitude > 0.1f)  // ç§»å‹•ãŒã¾ã å®Œäº†ã—ã¦ã„ãªã„å ´åˆ
+        // ˆê’è‚Ì‘¬“x‚ÅˆÚ“®
+        if (newDirection.magnitude > 0.1f)  // ˆÚ“®‚ª‚Ü‚¾Š®—¹‚µ‚Ä‚¢‚È‚¢ê‡
         {
-            // ã‚«ãƒƒãƒ—ã‚’ã‚¹ãƒ ãƒ¼ã‚ºã«ç§»å‹•ã•ã›ã‚‹
+            // ƒJƒbƒv‚ğƒXƒ€[ƒY‚ÉˆÚ“®‚³‚¹‚é
             selectCup.transform.position = Vector3.MoveTowards(selectCup_posV3, target_posV3, moveSpeed * Time.deltaTime);
         }
         else
         {
-            // ã‚«ãƒƒãƒ—ãŒã‚¿ãƒ¼ã‚²ãƒƒãƒˆä½ç½®ã«åˆ°é”ã—ãŸã‚‰
-            selectCup.transform.position = target_posV3; // æ­£ç¢ºã«ã‚¿ãƒ¼ã‚²ãƒƒãƒˆä½ç½®ã«ç§»å‹•
-            isMove = false;
+            // ƒJƒbƒv‚ªƒ^[ƒQƒbƒgˆÊ’u‚É“’B‚µ‚½‚ç
+            selectCup.transform.position = target_posV3; // ³Šm‚Éƒ^[ƒQƒbƒgˆÊ’u‚ÉˆÚ“®
+            isCupMove = false;
+            GameManager.isSceneMove = true;
         }
     }
     Vector3 getTargetPos(Vector2Int target_pos)
     {
         target_posV3 = stageBlock[target_pos.x, target_pos.y].transform.position;
-        target_posV3.y += 1f;
         return target_posV3;
     }
-    
 }

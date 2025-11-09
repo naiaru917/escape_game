@@ -1,85 +1,201 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
     public GameObject mainCamera;
     private Rigidbody rb;
-    public Vector3 cameraForward; //ƒJƒƒ‰‚©‚çŒ©‚½³–Ê
-    public Vector3 moveForward; //³–Ê•ûŒü‚Ö‚ÌˆÚ“®—Ê
-    public float speed; //Œ»İ‚ÌˆÚ“®‘¬“x
-    public float walkspeed = 3.0f; //•à‚­‚ÌˆÚ“®‘¬“x
-    public float runSpeed = 9.0f; //‘–‚é‚ÌˆÚ“®‘¬“x
-    public float moveX; // X•ûŒü‚ÌˆÚ“®‹——£
-    public float moveZ; // Z•ûŒü‚ÌˆÚ“®‹——£
+    public Vector3 cameraForward; //ã‚«ãƒ¡ãƒ©ã‹ã‚‰è¦‹ãŸæ­£é¢
+    public Vector3 moveForward; //æ­£é¢æ–¹å‘ã¸ã®ç§»å‹•é‡
+    public float speed; //ç¾åœ¨ã®ç§»å‹•é€Ÿåº¦
+    public float walkspeed = 3.0f; //æ­©ãæ™‚ã®ç§»å‹•é€Ÿåº¦
+    public float runSpeed = 9.0f; //èµ°ã‚‹æ™‚ã®ç§»å‹•é€Ÿåº¦
+    public float moveX; // Xæ–¹å‘ã®ç§»å‹•è·é›¢
+    public float moveZ; // Zæ–¹å‘ã®ç§»å‹•è·é›¢
 
+    public static bool isPlayerMove;    //ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒç§»å‹•å¯èƒ½ã‹
 
-    //ƒWƒƒƒ“ƒv
-    public float jumpForce = 4.0f; //ƒWƒƒƒ“ƒv—Í
-    bool isJump, isJumpWait; //ƒWƒƒƒ“ƒv‚ğs‚¦‚é‚©‚Ì”»’è
+    //ã‚¸ãƒ£ãƒ³ãƒ—
+    public float jumpForce = 4.0f; //ã‚¸ãƒ£ãƒ³ãƒ—åŠ›
+    bool isJump, isJumpWait; //ã‚¸ãƒ£ãƒ³ãƒ—ã‚’è¡Œãˆã‚‹ã‹ã®åˆ¤å®š
     float JumpWaitTimer;
+
+    [Header("è¶³éŸ³è¨­å®š")]
+    public AudioClip footstepClip;       // è¶³éŸ³éŸ³æºï¼ˆå…±é€šï¼‰
+    private AudioSource footstepSource;  // è¶³éŸ³ç”¨AudioSource
+    public float stepDistance = 0.5f;    // è¶³éŸ³1å›ã”ã¨ã«å¿…è¦ãªç§»å‹•è·é›¢
+
+    public bool isMoving { get; private set; } = false;
+
+    private CharacterController controller;
 
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        controller = GetComponent<CharacterController>();
         speed = walkspeed;
+
+        // è¶³éŸ³ç”¨AudioSourceåˆæœŸåŒ–
+        footstepSource = gameObject.AddComponent<AudioSource>();
+        footstepSource.clip = footstepClip;
+        footstepSource.spatialBlend = 1.0f; // 3Dã‚µã‚¦ãƒ³ãƒ‰åŒ–
+        footstepSource.rolloffMode = AudioRolloffMode.Logarithmic;
+        footstepSource.maxDistance = 10f;
+        footstepSource.loop = false;
+        footstepSource.playOnAwake = false;
+        footstepSource.volume = 0.1f;
     }
 
     // Update is called once per frame
     void Update()
     {
-        moveX = Input.GetAxis("Horizontal");
-        moveZ = Input.GetAxis("Vertical");
-
-
-        if (Input.GetKey(KeyCode.LeftShift))
+        if (isPlayerMove == true)
         {
-            speed = runSpeed;
+            moveX = Input.GetAxis("Horizontal");
+            moveZ = Input.GetAxis("Vertical");
+
+            isMoving = (Mathf.Abs(moveX) > 0.1f || Mathf.Abs(moveZ) > 0.1f);
+
+            // é€Ÿåº¦åˆ‡æ›¿
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                speed = runSpeed;
+            }
+            else
+            {
+                speed = walkspeed;
+            }
+
+            // è¶³éŸ³å‡¦ç†
+            if (!isJump)
+            {
+                HandleFootsteps();
+            }
+                
+            //ã‚¸ãƒ£ãƒ³ãƒ—
+            if (Input.GetKeyUp("space"))
+            {
+                if (!isJump && !isJumpWait) //isJumpã¨isJumpWaitã®ä¸¡æ–¹ãŒfalseã®ã¨ã
+                {
+                    isJumpWait = true;
+                    JumpWaitTimer = 0.2f;
+                }
+            }
+
+            //å°‘ã—çµŒã£ã¦ã‹ã‚‰ã‚¸ãƒ£ãƒ³ãƒ—
+            if (isJumpWait)
+            {
+                JumpWaitTimer -= Time.deltaTime;
+                if (JumpWaitTimer < 0)
+                {
+                    GetComponent<Rigidbody>().linearVelocity = transform.up * jumpForce;
+                    isJumpWait = false;
+                    isJump = true;
+                }
+            }
+
+            // ã‚¸ãƒ£ãƒ³ãƒ—é–‹å§‹æ™‚ã«è¶³éŸ³ã‚’æ­¢ã‚ã‚‹
+            if (isJump && footstepSource.isPlaying)
+            {
+                StopAllCoroutines(); // ãƒ•ã‚§ãƒ¼ãƒ‰ä¸­ãªã‚‰æ­¢ã‚ã‚‹
+                footstepSource.Stop();
+            }
         }
         else
         {
-            speed = walkspeed;
-        }
-        //ƒWƒƒƒ“ƒv
-        if (Input.GetKeyUp("space"))
-        {
-            if (!isJump && !isJumpWait) //isJump‚ÆisJumpWait‚Ì—¼•û‚ªfalse‚Ì‚Æ‚«
-            {
-                isJumpWait = true;
-                JumpWaitTimer = 0.2f;
-            }
-        }
-        //­‚µŒo‚Á‚Ä‚©‚çƒWƒƒƒ“ƒv
-        if (isJumpWait)
-        {
-            JumpWaitTimer -= Time.deltaTime;
-            if (JumpWaitTimer < 0)
-            {
-                GetComponent<Rigidbody>().velocity = transform.up * jumpForce;
-                isJumpWait = false;
-                isJump = true;
-            }
+            Debug.Log("ç§»å‹•ä¸å¯ä¸­");
         }
     }
 
     private void FixedUpdate()
     {
+        if (isPlayerMove == true)
+        {
+            // ã‚«ãƒ¡ãƒ©ã®æ–¹å‘ã‹ã‚‰ã€X-Zå¹³é¢ã®å˜ä½ãƒ™ã‚¯ãƒˆãƒ«ã‚’å–å¾—
+            cameraForward = Vector3.Scale(mainCamera.transform.forward, new Vector3(1, 0, 1)).normalized;
+            // æ–¹å‘ã‚­ãƒ¼ã®å…¥åŠ›å€¤ã¨ã‚«ãƒ¡ãƒ©ã®å‘ãã‹ã‚‰ã€ç§»å‹•æ–¹å‘ã‚’æ±ºå®š
+            moveForward = cameraForward * moveZ + mainCamera.transform.right * moveX;
 
-        // ƒJƒƒ‰‚Ì•ûŒü‚©‚çAX-Z•½–Ê‚Ì’PˆÊƒxƒNƒgƒ‹‚ğæ“¾
-        cameraForward = Vector3.Scale(mainCamera.transform.forward, new Vector3(1, 0, 1)).normalized;
-        // •ûŒüƒL[‚Ì“ü—Í’l‚ÆƒJƒƒ‰‚ÌŒü‚«‚©‚çAˆÚ“®•ûŒü‚ğŒˆ’è
-        moveForward = cameraForward * moveZ + mainCamera.transform.right * moveX;
-
-        // ˆÚ“®•ûŒü‚ÉƒXƒs[ƒh‚ğŠ|‚¯‚éBƒWƒƒƒ“ƒv‚â—‰º‚ª‚ ‚éê‡‚ÍA•Ê“rY²•ûŒü‚Ì‘¬“xƒxƒNƒgƒ‹‚ğ‘«‚·B
-        rb.velocity = moveForward * speed + new Vector3(0, rb.velocity.y, 0);
-
+            // ç§»å‹•æ–¹å‘ã«ã‚¹ãƒ”ãƒ¼ãƒ‰ã‚’æ›ã‘ã‚‹ã€‚ã‚¸ãƒ£ãƒ³ãƒ—ã‚„è½ä¸‹ãŒã‚ã‚‹å ´åˆã¯ã€åˆ¥é€”Yè»¸æ–¹å‘ã®é€Ÿåº¦ãƒ™ã‚¯ãƒˆãƒ«ã‚’è¶³ã™ã€‚
+            rb.linearVelocity = moveForward * speed + new Vector3(0, rb.linearVelocity.y, 0);
+        }
     }
 
-    //“–‚½‚è”»’è‚ª”­¶‚µ‚½‚Æ‚«‚ÉŒÄ‚Î‚ê‚é
+    //å½“ãŸã‚Šåˆ¤å®šãŒç™ºç”Ÿã—ãŸã¨ãã«å‘¼ã°ã‚Œã‚‹
     private void OnCollisionEnter(Collision collision)
     {
         isJump = false;
     }
+
+    private void HandleFootsteps()
+    {
+        // ã‚¸ãƒ£ãƒ³ãƒ—ä¸­ãªã‚‰å³åœæ­¢ï¼ˆæ—©æœŸãƒªã‚¿ãƒ¼ãƒ³ï¼‰
+        if (isJump)
+        {
+            if (footstepSource.isPlaying)
+            {
+                StopAllCoroutines();
+                footstepSource.Stop();
+            }
+            return;
+        }
+
+        // ç¾åœ¨ã®ç§»å‹•é‡ã‚’è¨ˆç®—
+        Vector3 horizontalVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+        isMoving = horizontalVelocity.magnitude > 0.1f && !isJump;
+
+        // æ­©è¡Œ or èµ°è¡Œã«å¿œã˜ã¦ pitch èª¿æ•´
+        float t = Mathf.InverseLerp(walkspeed, runSpeed, speed);
+        footstepSource.pitch = Mathf.Lerp(1.3f, 1.6f, t);
+
+        if (isMoving)
+        {
+            // å‹•ã„ã¦ã„ã¦ã¾ã å†ç”Ÿã—ã¦ã„ãªã„å ´åˆ â†’ å†ç”Ÿé–‹å§‹
+            if (!footstepSource.isPlaying)
+            {
+                footstepSource.loop = true;
+                footstepSource.Play();
+            }
+        }
+        else
+        {
+            // åœæ­¢ä¸­ â†’ ãƒ•ã‚§ãƒ¼ãƒ‰ã‚¢ã‚¦ãƒˆã—ã¦æ­¢ã‚ã‚‹
+            if (footstepSource.isPlaying)
+            {
+                StartCoroutine(FadeOutFootsteps(0.3f));
+            }
+        }
+    }
+
+
+    private IEnumerator FadeOutFootsteps(float fadeTime)
+    {
+        float startVolume = footstepSource.volume;
+        float elapsed = 0f;
+
+        while (elapsed < fadeTime)
+        {
+            elapsed += Time.deltaTime;
+            footstepSource.volume = Mathf.Lerp(startVolume, 0f, elapsed / fadeTime);
+            yield return null;
+        }
+
+        footstepSource.Stop();
+        footstepSource.volume = startVolume; // æ¬¡ã®å†ç”Ÿã«å‚™ãˆã¦æˆ»ã™
+    }
+
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®è¶³éŸ³ã‚’å¤–éƒ¨ã‹ã‚‰æ­¢ã‚ã‚‹ãŸã‚ã®ãƒ¡ã‚½ãƒƒãƒ‰
+    public void StopFootsteps()
+    {
+        if (footstepSource != null && footstepSource.isPlaying)
+        {
+            StopAllCoroutines();
+            footstepSource.Stop();
+            footstepSource.volume = 1.0f; // æ¬¡å›å†ç”Ÿæ™‚ã«å‚™ãˆã¦æˆ»ã™
+        }
+    }
+
+
+
 }

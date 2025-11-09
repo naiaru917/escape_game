@@ -3,83 +3,255 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-
 public class CupCakeGimmick : MonoBehaviour
 {
     public GameObject CupCakeA, CupCakeB, CupCakeC;
-    List<GameObject> targets_pos = new List<GameObject>(); // ã™ã¹ã¦ã®ã‚«ãƒƒãƒ—
-    List<bool> isOccupied;  //ã‚«ãƒƒãƒ—ã‚±ãƒ¼ã‚­ãŒç”Ÿæˆã•ã‚Œã¦ã„ã‚Œã°Trueã€ã•ã‚Œã¦ã„ãªã„ã®ãªã‚‰False
-    private int targetCnt;  //ã‚«ãƒƒãƒ—ã‚±ãƒ¼ã‚­ã®æ•°ã‚’è¨˜éŒ²
+    List<GameObject> targets_pos = new List<GameObject>(); // ƒJƒbƒvƒP[ƒL‚ÌoŒ»êŠ
+    List<bool> isOccupied;  //ƒJƒbƒvƒP[ƒL‚ª¶¬‚³‚ê‚Ä‚¢‚ê‚ÎTrueA‚³‚ê‚Ä‚¢‚È‚¢‚Ì‚È‚çFalse
+
+    // oŒ»”‚ÌŠÇ—
+    public static int totalCnt;
+    public static int cntA;
+    public static int cntB;
+    public static int cntC;
+
+    // ¶¬ƒ^ƒCƒ}[
+    float spawnTimer = 0f;
+    float nextSpawnDelay = 0f;
+
+    // ƒQ[ƒ€is—p
+    public float gameTime = 20f; // §ŒÀŠÔ
+    private float currentTime;
+    public Text timeText;  // Canvas “à‚Ì TimeText
+    public Text scoreText; // Canvas “à‚Ì ScoreText
+    private int score = 0;
+    private bool isGameOver = false;
+    public static bool isPlayCupCakeGame;
+
+    public GameObject Gate; //Ÿ‚ÌƒXƒe[ƒW‚És‚­‚½‚ß‚ÌƒQ[ƒg
 
     void Start()
     {
-        //ã‚«ãƒƒãƒ—ã‚±ãƒ¼ã‚­ã®å‡ºç¾å ´æ‰€ï¼ˆã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆï¼‰ã‚’å–å¾—
+        //ƒJƒbƒvƒP[ƒL‚ÌoŒ»êŠiƒIƒuƒWƒFƒNƒgj‚ğæ“¾
         GetTargetPos();
 
-        //ç”Ÿæˆå ´æ‰€ãŒé‡ãªã‚‰ãªã„ã‚ˆã†ã«ã™ã‚‹
+        //¶¬êŠ‚ªd‚È‚ç‚È‚¢‚æ‚¤‚É‚·‚é
         isOccupied = new List<bool>();
 
-        //ç”Ÿæˆå ´æ‰€ã«æ—¢ã«ã‚«ãƒƒãƒ—ã‚±ãƒ¼ã‚­ãŒã‚ã‚‹ã‹ã®åˆ¤å®š
+        //¶¬êŠ‚ÉŠù‚ÉƒJƒbƒvƒP[ƒL‚ª‚ ‚é‚©‚Ì”»’è
         for (int i = 0; i < targets_pos.Count; i++)
         {
-            isOccupied.Add(false);  //æœ€åˆã¯ã™ã¹ã¦Falseã‚’ç™»éŒ²
+            isOccupied.Add(false);  //Å‰‚Í‚·‚×‚ÄFalse‚ğ“o˜^
         }
 
+        totalCnt = cntA = cntB = cntC = 0;
 
-        //ãƒ©ãƒ³ãƒ€ãƒ ã«5ã¤ç”Ÿæˆ
-        for (int i = 0; i < 5; i++)
+        // Å‰‚ÌƒfƒBƒŒƒC‚ğƒ‰ƒ“ƒ_ƒ€‚Éİ’èi0`1•b‚ÌŠÔj
+        nextSpawnDelay = Random.Range(0f, 0.2f);
+
+        // ŠÔ‰Šú‰»
+        currentTime = gameTime;
+        UpdateUI();
+
+        // ƒ~ƒjƒQ[ƒ€‚ªI‚í‚é‚Ü‚ÅƒV[ƒ“ˆÚ“®‚ğ•s‰Â‚É
+        GameManager.isSceneMove = false;
+
+        // ƒvƒŒƒCƒ„[‚ÌˆÚ“®‚ğ•s‰Â‚É
+        PlayerController.isPlayerMove = false;
+
+        isPlayCupCakeGame = true;
+
+        //Ÿ‚Ì•”‰®‚ÖˆÚ“®‚·‚é‚½‚ß‚ÌƒQ[ƒg‚ğ”ñ•\¦‚É
+        if (GameManager.isGate == true)
         {
-            //ã‚«ãƒƒãƒ—ã‚±ãƒ¼ã‚­ã‚’ç”Ÿæˆ
-            ComeOutTarget();
+            Gate.gameObject.SetActive(true);
         }
-        
-        Debug.Log("ã‚«ãƒƒãƒ—ã‚±ãƒ¼ã‚­ã®æ•°ï¼š" + targetCnt);
-        
-        targetCnt = 0;
+        else
+        {
+            Gate.gameObject.SetActive(false);
+        }
     }
 
     void Update()
     {
+        if (isGameOver) return;
 
+        if (!GameManager.isPaused)
+        {
+            // ŠÔ‚ği‚ß‚é
+            spawnTimer += Time.deltaTime;
+
+            // --- ƒJƒEƒ“ƒgƒ_ƒEƒ“ ---
+            currentTime -= Time.deltaTime;
+            if (currentTime < 0) currentTime = 0;
+            UpdateUI();
+
+            if (currentTime <= 0)
+            {
+                EndMiniGame();
+                return;
+            }
+
+            // --- oŒ»ˆ— ---
+            if (totalCnt < 40 && spawnTimer >= nextSpawnDelay)  //ƒJƒbƒvƒP[ƒL‚ª20ŒÂˆÈ“à‚Ìê‡‚É¶¬
+            {
+                //ƒJƒbƒvƒP[ƒL‚ğ¶¬
+                ComeOutTarget();
+
+                // ƒ^ƒCƒ}[ƒŠƒZƒbƒg + Ÿ‰ñ‚Ì‘Ò‚¿ŠÔ‚ğƒ‰ƒ“ƒ_ƒ€‚É
+                spawnTimer = 0f;
+                nextSpawnDelay = Random.Range(0.3f, 1.0f);
+            }
+        }
     }
 
     void GetTargetPos()
     {
         targets_pos = GameObject.FindGameObjectsWithTag("TargetPos").ToList();
-
-        //å‡ºç¾å ´æ‰€ç¢ºèªç”¨
-        //foreach(GameObject target in targets_pos)
-        //{
-        //    Vector3 potition = target.transform.position;
-        //    potition.y += 0.25f;
-        //    GameObject obj = Instantiate(CupCakeA, potition, Quaternion.identity);
-        //}
     }
 
     void ComeOutTarget()
     {
-        // ç©ºãã®å ´æ‰€ã‚’ãƒªã‚¹ãƒˆã‚¢ãƒƒãƒ—
+        // ‹ó‚«‚ÌêŠ‚ğƒŠƒXƒgƒAƒbƒv
         List<int> emptyIndices = new List<int>();
         for (int i = 0; i < isOccupied.Count; i++)
         {
             if (!isOccupied[i]) emptyIndices.Add(i);
         }
 
-        // ç©ºã„ã¦ã‚‹å ´æ‰€ãŒãªã„ãªã‚‰return
+        // ‹ó‚¢‚Ä‚éêŠ‚ª‚È‚¢‚È‚çreturn
         if (emptyIndices.Count == 0) return;
 
-        // ç©ºã„ã¦ã‚‹å ´æ‰€ã‹ã‚‰ãƒ©ãƒ³ãƒ€ãƒ ã§é¸ã¶
+        // ‹ó‚¢‚Ä‚éêŠ‚©‚çƒ‰ƒ“ƒ_ƒ€‚Å‘I‚Ô
         int randomIndex = Random.Range(0, emptyIndices.Count);
         int selectedPos = emptyIndices[randomIndex];
 
-        // ç”Ÿæˆ
-        GameObject target = targets_pos[selectedPos];
-        Vector3 position = target.transform.position;
-        position.y += 0.25f;
-        Instantiate(CupCakeA, position, Quaternion.identity);
-        targetCnt++;
+        // o‚·í—Ş‚ğ‘I‚Ô
+        GameObject prefab = SelectCupCakeType(out CupCakeType type);
 
-        // ä½¿ç”¨ä¸­ãƒãƒ¼ã‚¯
+        if (prefab == null) return; // §ŒÀ‚Åo‚¹‚È‚¢‚Æ‚«
+
+        Vector3 position = targets_pos[selectedPos].transform.position;
+        Quaternion rotarion = targets_pos[selectedPos].transform.rotation;
+        position.y -= 0.15f;
+        GameObject obj = Instantiate(prefab, position, rotarion);
+
+        // CupCakeManager‚Éî•ñ‚ğ“n‚·
+        CupCakeManager manager = obj.GetComponent<CupCakeManager>();
+        manager.gimmick = this;
+        manager.myIndex = selectedPos;
+        manager.myType = type;
+
+        // ƒJƒEƒ“ƒgXV
+        totalCnt++;
+        switch (type)
+        {
+            case CupCakeType.A: cntA++; break;
+            case CupCakeType.B: cntB++; break;
+            case CupCakeType.C: cntC++; break;
+        }
+
+        // g—p’†ƒ}[ƒN
         isOccupied[selectedPos] = true;
     }
+
+    // í—Ş‚ğ‘I‚Ôˆ—
+    GameObject SelectCupCakeType(out CupCakeType type)
+    {
+        type = CupCakeType.A;
+
+        // ƒ‰ƒ“ƒ_ƒ€‘I‘ği—Dæ“x‚âŠm—¦‚ÍŒã‚Å’²®‰Âj
+        int r = Random.Range(0, 3); // 0=A,1=B,2=C
+
+        if (r == 1 && cntB < 3)
+        {
+            type = CupCakeType.B;
+            return CupCakeB;
+        }
+        else if (r == 2 && cntC < 1)
+        {
+            type = CupCakeType.C;
+            return CupCakeC;
+        }
+        else
+        {
+            type = CupCakeType.A;
+            return CupCakeA;
+        }
+    }
+
+    // Á–Å‚ÉŒÄ‚Î‚ê‚é
+    public void TargetDestroyed(int index, CupCakeType type)
+    {
+        isOccupied[index] = false;
+        totalCnt--;
+
+        switch (type)
+        {
+            case CupCakeType.A: cntA--; break;
+            case CupCakeType.B: cntB--; break;
+            case CupCakeType.C: cntC--; break;
+        }
+    }
+
+    // ¥ ƒXƒRƒA‰ÁZ—p ¥
+    public void AddScore(int value)
+    {
+        score += value;
+        UpdateUI();
+    }
+
+    void UpdateUI()
+    {
+        if (timeText != null)
+            timeText.text = "Time: " + Mathf.CeilToInt(currentTime).ToString();
+        if (scoreText != null)
+            scoreText.text = "Score: " + score.ToString();
+    }
+
+    void EndMiniGame()
+    {
+        isGameOver = true;
+        timeText.enabled = false;
+
+        ClearAllCupCakes(); // c‚Á‚Ä‚¢‚éƒJƒbƒvƒP[ƒL‚ğ‚·‚×‚Äíœ
+
+        if (score >= 200)
+        {
+            Debug.Log("¬Œ÷I SCORE: " + score);
+            GameManager.isGate = true;
+            Gate.gameObject.SetActive(true);
+        }
+        else
+        {
+            Debug.Log("¸”s... SCORE: " + score);
+        }
+
+        // ƒV[ƒ“ˆÚ“®‚ğ‰Â”\‚É
+        GameManager.isSceneMove = true;
+
+        isPlayCupCakeGame = false;
+    }
+
+    void ClearAllCupCakes()
+    {
+        // ƒV[ƒ““à‚É‚ ‚é‘S‚Ä‚Ì CupCake ƒ^ƒO‚ÌƒIƒuƒWƒFƒNƒg‚ğæ“¾
+        GameObject[] allCupCakes = GameObject.FindGameObjectsWithTag("CupCake");
+
+        foreach (GameObject cake in allCupCakes)
+        {
+            // oŒ»Œ³‚É‚à’Ê’m‚µ‚ÄƒJƒEƒ“ƒg‚ğŒ¸‚ç‚·
+            CupCakeManager manager = cake.GetComponent<CupCakeManager>();
+            if (manager != null)
+            {
+                TargetDestroyed(manager.myIndex, manager.myType);
+            }
+
+            // ©•ª©g‚ğíœ
+            Destroy(cake);
+        }
+    }
+
+    // í—Ş‚ğ•\‚·Enum
+    public enum CupCakeType { A, B, C }
 }

@@ -6,20 +6,14 @@ public class ObjectStateManager : MonoBehaviour
     public string objectName;
     public int objectID;
     public bool isPrefab;
+    public bool shouldSave = true;
     public WorldName worldName;
 
 
     private void Start()
     {
-        // ã‚²ãƒ¼ãƒ é–‹å§‹æ™‚ã«ãƒ‡ãƒ¼ã‚¿ã‚’ãƒªã‚»ãƒƒãƒˆï¼ˆåˆå›ã®ã¿ï¼‰
-        if (GameManager.isFirstRunCup)
-        {
-            objectState.ResetAllData();
-            GameManager.isFirstRunCup = false;
-        }
-
-        // åˆæœŸä½ç½®ãŒä¿å­˜ã•ã‚Œã¦ã„ã‚Œã°å¾©å…ƒ
-        if (objectState.HasInitialPosition(objectName, objectID))
+        // ‰ŠúˆÊ’u‚ª•Û‘¶‚³‚ê‚Ä‚¢‚ê‚Î•œŒ³
+        if (shouldSave)
         {
             RestorePosition();
         }
@@ -29,8 +23,8 @@ public class ObjectStateManager : MonoBehaviour
     {
         if (GameManager.isSceneMove == true)
         {
-            // æœ¬ã®ä¸–ç•Œã«ã„ã‚‹é–“ã€Vã‚­ãƒ¼ã§ä½ç½®ã‚’ä¿å­˜
-            if (GameManager.isInBookWorld && Input.GetKeyDown(KeyCode.V))
+            // ƒV[ƒ“‘JˆÚ‚ÉˆÊ’u‚ğ•Û‘¶
+            if (Input.GetKeyDown(KeyCode.V))
             {
                 SaveCurrentPosition();
             }
@@ -39,7 +33,9 @@ public class ObjectStateManager : MonoBehaviour
 
     private void SaveCurrentPosition()
     {
-        // è‡ªå‹•æ¡ç•ªå‡¦ç†ï¼ˆisPrefabæ™‚ï¼‰
+        if (!shouldSave) return;
+
+        // ©“®Ì”Ôˆ—iisPrefabj
         if (isPrefab && objectID <= 0)
         {
             objectID = 1;
@@ -52,15 +48,29 @@ public class ObjectStateManager : MonoBehaviour
             }
         }
 
-        objectState.SaveState(objectName, objectID, isPrefab, worldName, transform.position, transform.rotation);
+        bool isMovable = true;
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+            isMovable = !rb.isKinematic; // ƒŠƒWƒbƒhƒ{ƒfƒB‚ª“®‚¯‚é‚©‚Ç‚¤‚©•Û‘¶
+
+
+        objectState.SaveState(objectName, objectID, isPrefab, worldName, transform.position, transform.rotation, isMovable);
     }
 
     private void RestorePosition()
     {
-        if (objectState.TryGetState(objectName, objectID, out Vector3 savedPosition, out Quaternion savedRotation))
+        if (objectState.TryGetState(objectName, objectID, out Vector3 savedPosition, out Quaternion savedRotation, out bool isMovable))
         {
-            transform.position = savedPosition;     //ä½ç½®ã®åæ˜ 
-            transform.rotation = savedRotation;     //å›è»¢ã®åæ˜ 
+            transform.position = savedPosition;     //ˆÊ’u‚Ì”½‰f
+            transform.rotation = savedRotation;     //‰ñ“]‚Ì”½‰f
+
+            Rigidbody rb = GetComponent<Rigidbody>();
+            if (rb != null)
+                rb.isKinematic = !isMovable; // © •Û‘¶‚³‚ê‚½ isMovable ‚É‰‚¶‚Ä•¨—‹““®Ø‘Ö
+
+            // •œŒ³ŒãAObjectState‚©‚çƒf[ƒ^‚ğíœ
+             objectState.RemoveState(objectName, objectID);
+            
         }
     }
 }

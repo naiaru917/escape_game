@@ -4,8 +4,8 @@ using System.Linq;
 
 public class PrefabStateRestorer : MonoBehaviour
 {
-    public ObjectState objectState;                // ä¿å­˜ã•ã‚Œã¦ã„ã‚‹ ScriptableObject
-    public List<GameObject> prefabList;            // ç”Ÿæˆå¯¾è±¡ã®ãƒ—ãƒ¬ãƒãƒ–ãƒªã‚¹ãƒˆ
+    public ObjectState objectState;                // •Û‘¶‚³‚ê‚Ä‚¢‚é ScriptableObject
+    public List<GameObject> prefabList;            // ¶¬‘ÎÛ‚ÌƒvƒŒƒnƒuƒŠƒXƒg
 
     void Start()
     {
@@ -14,35 +14,40 @@ public class PrefabStateRestorer : MonoBehaviour
 
     private void RestorePrefabsFromState()
     {
-        // ãƒ‡ãƒ¼ã‚¿ã‚’è¤‡è£½ã—ã¦å®‰å…¨ã«ã‚¤ãƒ†ãƒ¬ãƒ¼ãƒˆ
+        // ƒf[ƒ^‚ğ•¡»‚µ‚ÄˆÀ‘S‚ÉƒCƒeƒŒ[ƒg
         var dataList = objectState.objectDataList.ToList();
 
         foreach (var data in dataList)
         {
-            // ãƒ—ãƒ¬ãƒãƒ–ã®ã¿å‡¦ç†
+            // ƒvƒŒƒnƒu‚Ì‚İˆ—
             if (!data.isPrefab)
                 continue;
 
-            // ãƒ—ãƒ¬ãƒãƒ–ã‚’åå‰ã§æ¤œç´¢
+            // ƒvƒŒƒnƒu‚ğ–¼‘O‚ÅŒŸõ
             GameObject prefabToSpawn = prefabList.Find(p => p.name == data.objectName);
             if (prefabToSpawn == null)
             {
-                Debug.LogWarning($"Prefab '{data.objectName}' ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“ã§ã—ãŸã€‚");
+                Debug.LogWarning($"Prefab '{data.objectName}' ‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ‚Å‚µ‚½B");
                 continue;
             }
 
-            // ãƒ—ãƒ¬ãƒãƒ–ã‚’ã‚·ãƒ¼ãƒ³ä¸Šã«å¾©å…ƒ
+            // ƒvƒŒƒnƒu‚ğƒV[ƒ“ã‚É•œŒ³
             GameObject spawned = Instantiate(prefabToSpawn, data.position, data.rotation);
             spawned.name = prefabToSpawn.name;
 
-            // IceCreamGimmick ã«ç™»éŒ²ï¼ˆå­˜åœ¨ã™ã‚Œã°ï¼‰
+            // isMovable ”½‰f
+            Rigidbody rb = spawned.GetComponent<Rigidbody>();
+            if (rb != null)
+                rb.isKinematic = !data.isMovable;
+
+            // IceCreamGimmick ‚É“o˜^i‘¶İ‚·‚ê‚Îj
             IceCreamGimmick gimmick = FindFirstObjectByType<IceCreamGimmick>();
             if (gimmick != null)
             {
                 gimmick.RegisterRestoredIce(spawned);
             }
 
-            // ObjectState ã‹ã‚‰å¾©å…ƒæ¸ˆã¿ãƒ‡ãƒ¼ã‚¿ã‚’å‰Šé™¤
+            // ObjectState ‚©‚ç•œŒ³Ï‚İƒf[ƒ^‚ğíœ
             objectState.objectDataList.Remove(data);
         }
 

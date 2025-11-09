@@ -7,30 +7,30 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    [Header("ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼Prefab")]
-    public GameObject brotherPrefab;    //æœ¬ã®ä¸–ç•Œï¼ˆå…„è¦–ç‚¹ï¼‰ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
-    public GameObject sisterPrefab;     //ç¾å®Ÿä¸–ç•Œï¼ˆå¦¹è¦–ç‚¹ï¼‰ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
-    public Transform sisterFootPoint;         //å¦¹ã®åœ°é¢ã®åº§æ¨™
+    [Header("ƒvƒŒƒCƒ„[Prefab")]
+    public GameObject brotherPrefab;    //–{‚Ì¢ŠEiŒZ‹“_j‚ÌƒvƒŒƒCƒ„[
+    public GameObject sisterPrefab;     //Œ»À¢ŠEi–…‹“_j‚ÌƒvƒŒƒCƒ„[
+    public Transform sisterFootPoint;         //–…‚Ì’n–Ê‚ÌÀ•W
 
-    [Header("ã‚·ãƒ¼ãƒ³è¨­å®š")]
-    public string realWorldScene = "RealWorld";    //ç¾å®Ÿä¸–ç•Œã®ã‚·ãƒ¼ãƒ³
-    public List<string> bookWorldScenes = new List<string> { "Stage1", "Stage2", "Stage3"};    //æœ¬ä¸–ç•Œã®ã‚·ãƒ¼ãƒ³
-    public static int currentBookWorldIndex = 0;    //ä½•ç•ªç›®ã®æœ¬ä¸–ç•Œã«ã„ã‚‹ã‹
+    [Header("ƒV[ƒ“İ’è")]
+    public string realWorldScene = "RealWorld";    //Œ»À¢ŠE‚ÌƒV[ƒ“
+    public List<string> bookWorldScenes = new List<string> { "Stage1", "Stage2", "Stage3"};    //–{¢ŠE‚ÌƒV[ƒ“
+    public static int currentBookWorldIndex = 0;    //‰½”Ô–Ú‚Ì–{¢ŠE‚É‚¢‚é‚©
 
     private GameObject currentPlayer;
-    public static Dictionary<string, Vector3> playerPositions = new Dictionary<string, Vector3>();    //ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ä½ç½®
-    private Dictionary<string, float> playerRotations_y = new Dictionary<string, float>();    //ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®Yå›è»¢ï¼ˆä¸Šä¸‹ï¼‰
-    private Dictionary<string, float> playerRotations_x = new Dictionary<string, float>();    //ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®Xå›è»¢ï¼ˆå·¦å³ï¼‰
+    public static Dictionary<string, Vector3> playerPositions = new Dictionary<string, Vector3>();    //ƒvƒŒƒCƒ„[‚ÌˆÊ’u
+    private Dictionary<string, float> playerRotations_y = new Dictionary<string, float>();    //ƒvƒŒƒCƒ„[‚ÌY‰ñ“]iã‰ºj
+    private Dictionary<string, float> playerRotations_x = new Dictionary<string, float>();    //ƒvƒŒƒCƒ„[‚ÌX‰ñ“]i¶‰Ej
 
-    private Dictionary<string, (string itemName, Vector3 scale)> heldItems = new Dictionary<string, (string, Vector3)>();   // æ‰€æŒã‚¢ã‚¤ãƒ†ãƒ 
+    private Dictionary<string, (string itemName, Vector3 scale)> heldItems = new Dictionary<string, (string, Vector3)>();   // ŠƒAƒCƒeƒ€
 
-    // ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ä½ç½®æƒ…å ±
+    // ƒIƒuƒWƒFƒNƒg‚ÌˆÊ’uî•ñ
     [SerializeField] private ObjectState objectState;
 
-    public static bool isInBookWorld = false;   //ç¾åœ¨ã€æœ¬ä¸–ç•Œã«ã„ã‚‹ã‹
-    public static bool isGate = false;    //ã‚²ãƒ¼ãƒˆãŒå‡ºç¾ã—ã¦ã„ã‚‹ã‹
-    public static bool isSceneMove = true;  //ã‚·ãƒ¼ãƒ³ç§»å‹•ãŒå¯èƒ½ã‹ï¼ˆã»ã‹ã®å‡¦ç†ä¸­ã˜ã‚ƒãªã„ã‹ï¼‰
-    public static bool isPaused = false;    //ãƒãƒ¼ã‚ºç”»é¢ã‚’é–‹ã„ã¦ã„ã‚‹ã‹
+    public static bool isInBookWorld = false;   //Œ»İA–{¢ŠE‚É‚¢‚é‚©
+    public static bool isGate = false;    //ƒQ[ƒg‚ªoŒ»‚µ‚Ä‚¢‚é‚©
+    public static bool isSceneMove = true;  //ƒV[ƒ“ˆÚ“®‚ª‰Â”\‚©i‚Ù‚©‚Ìˆ—’†‚¶‚á‚È‚¢‚©j
+    public static bool isPaused = false;    //ƒ|[ƒY‰æ–Ê‚ğŠJ‚¢‚Ä‚¢‚é‚©
     public Transform heldItemSlot;
 
     public GameObject testPrefab;
@@ -46,7 +46,7 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            objectState.ResetAllData();      // ObjectStateã®ãƒ‡ãƒ¼ã‚¿ã‚’ãƒªã‚»ãƒƒãƒˆ
+            objectState.ResetAllData();      // ObjectState‚Ìƒf[ƒ^‚ğƒŠƒZƒbƒg
             InitializePlayerStates();
         }
         else
@@ -54,21 +54,22 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-        // åˆå›ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ç”Ÿæˆ
+        // ‰‰ñƒvƒŒƒCƒ„[¶¬
         SpawnPlayer(isInBookWorld);
+        PlayerController.isPlayerMove = true;
     }
 
     void InitializePlayerStates()
     {
-        // ä½ç½®ã®åˆæœŸåŒ–
-        playerPositions[realWorldScene] = new Vector3(0, 2f, 0);    //ç¾å®Ÿä¸–ç•Œã®åˆæœŸä½ç½®
-        playerRotations_y[realWorldScene] = 0f;         //ç¾å®Ÿä¸–ç•Œã®åˆæœŸå›è»¢æ–¹å‘
+        // ˆÊ’u‚Ì‰Šú‰»
+        playerPositions[realWorldScene] = new Vector3(0, 2f, 0);    //Œ»À¢ŠE‚Ì‰ŠúˆÊ’u
+        playerRotations_y[realWorldScene] = 0f;         //Œ»À¢ŠE‚Ì‰Šú‰ñ“]•ûŒü
         playerRotations_x[realWorldScene] = 0f;
 
         foreach (string scene in bookWorldScenes)
         {
-            playerPositions[scene] = new Vector3(0, 2f, 0);     //æœ¬ä¸–ç•Œã®åˆæœŸä½ç½®
-            playerRotations_y[scene] = 0;          //æœ¬ä¸–ç•Œã®åˆæœŸå›è»¢æ–¹å‘
+            playerPositions[scene] = new Vector3(0, 2f, 0);     //–{¢ŠE‚Ì‰ŠúˆÊ’u
+            playerRotations_y[scene] = 0;          //–{¢ŠE‚Ì‰Šú‰ñ“]•ûŒü
             playerRotations_x[scene] = 0;
         }
     }
@@ -77,7 +78,7 @@ public class GameManager : MonoBehaviour
     {
         if (isSceneMove == true)
         {
-            // Vã‚­ãƒ¼ã§è¦–ç‚¹åˆ‡ã‚Šæ›¿ãˆ
+            // VƒL[‚Å‹“_Ø‚è‘Ö‚¦
             if (Input.GetKeyDown(KeyCode.V))
             {
                 SwitchWorld();
@@ -87,11 +88,11 @@ public class GameManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.V))
             {
-                Debug.Log("ç¾åœ¨ã¯ç§»å‹•ä¸å¯èƒ½ã§ã™");
+                Debug.Log("Œ»İ‚ÍˆÚ“®•s‰Â”\‚Å‚·");
             }
         }
 
-        // WitchManagerã«å¦¹ã®ä½ç½®ã‚’å…±æœ‰
+        // WitchManager‚É–…‚ÌˆÊ’u‚ğ‹¤—L
         if (!isInBookWorld && currentPlayer != null)
         {
             WitchManager.Instance.UpdateSisterPosition(currentPlayer.transform.position);
@@ -100,25 +101,25 @@ public class GameManager : MonoBehaviour
 
     void SpawnPlayer(bool inBookWorld)
     {
-        // ç¾åœ¨ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’å‰Šé™¤
+        // Œ»İ‚ÌƒvƒŒƒCƒ„[‚ğíœ
         if (currentPlayer != null)
         {
             SavePlayerState();
             Destroy(currentPlayer);
         }
 
-        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ç”Ÿæˆ
+        // ƒvƒŒƒCƒ„[¶¬
         if (inBookWorld)
         {
             string currentScene = bookWorldScenes[currentBookWorldIndex];
 
             currentPlayer = Instantiate(brotherPrefab, GetPlayerPosition(currentScene), Quaternion.identity);
 
-            // Yè»¸ã®å›è»¢ï¼ˆå·¦å³è¦–ç‚¹ï¼‰ã‚’è¨­å®š
+            // Y²‚Ì‰ñ“]i¶‰E‹“_j‚ğİ’è
             float playerY = GetPlayerRotation_y(currentScene);
             currentPlayer.transform.rotation = Quaternion.Euler(0f, playerY, 0f);
 
-            // ã‚«ãƒ¡ãƒ©ã®Xè»¸å›è»¢ï¼ˆä¸Šä¸‹è¦–ç‚¹ï¼‰ã‚’è¨­å®š
+            // ƒJƒƒ‰‚ÌX²‰ñ“]iã‰º‹“_j‚ğİ’è
             float cameraX = GetPlayerRotation_x(currentScene);
             Camera.main.GetComponent<CameraController>().SetInitialXRotation(cameraX);
 
@@ -127,16 +128,16 @@ public class GameManager : MonoBehaviour
         {
             currentPlayer = Instantiate(sisterPrefab, GetPlayerPosition(realWorldScene), Quaternion.identity);
 
-            // Yè»¸ã®å›è»¢ï¼ˆå·¦å³è¦–ç‚¹ï¼‰ã‚’è¨­å®š
+            // Y²‚Ì‰ñ“]i¶‰E‹“_j‚ğİ’è
             float playerY = GetPlayerRotation_y(realWorldScene);
             currentPlayer.transform.rotation = Quaternion.Euler(0f, playerY, 0f);
 
-            // ã‚«ãƒ¡ãƒ©ã®Xè»¸å›è»¢ï¼ˆä¸Šä¸‹è¦–ç‚¹ï¼‰ã‚’è¨­å®š
+            // ƒJƒƒ‰‚ÌX²‰ñ“]iã‰º‹“_j‚ğİ’è
             float cameraX = GetPlayerRotation_x(realWorldScene);
             Camera.main.GetComponent<CameraController>().SetInitialXRotation(cameraX);
         }
 
-        // å¦¹ã®è¶³å…ƒå‚ç…§ã‚’ WitchManager ã«ç™»éŒ²
+        // –…‚Ì‘«Œ³QÆ‚ğ WitchManager ‚É“o˜^
         var foot = currentPlayer.GetComponentsInChildren<Transform>(true)
     .FirstOrDefault(t => t.name == "FootPoint");
 
@@ -144,17 +145,17 @@ public class GameManager : MonoBehaviour
         {
             sisterFootPoint = foot;
             WitchManager.Instance.UpdateSisterPosition(foot.position);
-            Debug.Log($"[GameManager] å¦¹ã®FootPointã‚’ WitchManager ã«ç™»éŒ²ã—ã¾ã—ãŸã€‚ï¼ˆpath: {foot.name}ï¼‰");
+            Debug.Log($"[GameManager] –…‚ÌFootPoint‚ğ WitchManager ‚É“o˜^‚µ‚Ü‚µ‚½Bipath: {foot.name}j");
         }
         else if (!inBookWorld && foot == null)
         {
-            Debug.LogWarning("[GameManager] å¦¹ã®FootPointãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“ã§ã—ãŸï¼ˆå¦¹è¦–ç‚¹ã§ç”Ÿæˆã—ã¦ã„ã‚‹ã‹ç¢ºèªï¼‰");
+            Debug.LogWarning("[GameManager] –…‚ÌFootPoint‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ‚Å‚µ‚½i–…‹“_‚Å¶¬‚µ‚Ä‚¢‚é‚©Šm”Fj");
         }
     }
 
     void SwitchWorld()
     {
-        // ã‚·ãƒ¼ãƒ³åˆ‡ã‚Šæ›¿ãˆç›´å‰ã«é­”å¥³ã‚’åˆ¶å¾¡
+        // ƒV[ƒ“Ø‚è‘Ö‚¦’¼‘O‚É–‚—‚ğ§Œä
         if (WitchManager.Instance != null)
         {
             EnemyAI witch = WitchManager.Instance.CurrentWitch;
@@ -162,39 +163,39 @@ public class GameManager : MonoBehaviour
             {
                 if (isInBookWorld)
                 {
-                    // å…„è¦–ç‚¹ã¸è¡Œãå‰ï¼šé­”å¥³ã‚’é€æ˜åŒ–ã—ã¦å‹•ä½œç¶™ç¶š
+                    // ŒZ‹“_‚Ös‚­‘OF–‚—‚ğ“§–¾‰»‚µ‚Ä“®ìŒp‘±
                     witch.SetVisible(false);
                 }
                 else
                 {
-                    // å¦¹è¦–ç‚¹ã¸æˆ»ã‚‹å‰ï¼šé­”å¥³ã‚’å†è¡¨ç¤º
+                    // –…‹“_‚Ö–ß‚é‘OF–‚—‚ğÄ•\¦
                     witch.SetVisible(true);
                 }
             }
         }
 
-        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ä½ç½®æƒ…å ±ã‚’è¨˜éŒ²
+        // ƒvƒŒƒCƒ„[‚ÌˆÊ’uî•ñ‚ğ‹L˜^
         SavePlayerState();
 
         if (isInBookWorld)
         {
-            //æœ¬ã®ä¸–ç•Œã‹ã‚‰ç¾å®Ÿä¸–ç•Œã¸
+            //–{‚Ì¢ŠE‚©‚çŒ»À¢ŠE‚Ö
             isInBookWorld = false;
             SceneManager.LoadScene("RealWorld");
             //InitializeDictionary();
         }
         else
         {
-            //ç¾å®Ÿä¸–ç•Œã‹ã‚‰æœ¬ã®ä¸–ç•Œã¸
+            //Œ»À¢ŠE‚©‚ç–{‚Ì¢ŠE‚Ö
             isInBookWorld = true;
             string nextScene = bookWorldScenes[currentBookWorldIndex];
             SceneManager.LoadScene(nextScene);
         }
 
-        //ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’ç§»å‹•å¯èƒ½ã«ã—ã¦ãŠã
+        //ƒvƒŒƒCƒ„[‚ğˆÚ“®‰Â”\‚É‚µ‚Ä‚¨‚­
         PlayerController.isPlayerMove = true;
 
-        // ã‚«ãƒ¼ã‚½ãƒ«ã‚’éè¡¨ç¤ºï¼†å›ºå®š
+        // ƒJ[ƒ\ƒ‹‚ğ”ñ•\¦•ŒÅ’è
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
@@ -208,7 +209,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("æœ¬ã®ä¸–ç•Œã‚’ã‚¯ãƒªã‚¢");
+            Debug.Log("–{‚Ì¢ŠE‚ğƒNƒŠƒA");
         }
     }
 
@@ -224,21 +225,21 @@ public class GameManager : MonoBehaviour
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // ã‚·ãƒ¼ãƒ³ãŒèª­ã¿è¾¼ã¾ã‚ŒãŸã‚‰ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚’ã‚¹ãƒãƒ¼ãƒ³
+        // ƒV[ƒ“‚ª“Ç‚İ‚Ü‚ê‚½‚çƒvƒŒƒCƒ„[‚ğƒXƒ|[ƒ“
         SpawnPlayer(isInBookWorld);
         RestoreHeldItem();
 
-        // å¦¹è¦–ç‚¹ã‚·ãƒ¼ãƒ³ã®å ´åˆ
+        // –…‹“_ƒV[ƒ“‚Ìê‡
         if (!isInBookWorld && WitchManager.Instance != null)
         {
             var witchMgr = WitchManager.Instance;
 
-            // å¦¹è¦–ç‚¹ã‹ã¤é­”å¥³ãŒå‡ºç¾çŠ¶æ…‹ã®å ´åˆã®ã¿å†è¡¨ç¤º
+            // –…‹“_‚©‚Â–‚—‚ªoŒ»ó‘Ô‚Ìê‡‚Ì‚İÄ•\¦
             if (witchMgr.CurrentWitch != null && witchMgr.isWitchActive)
             {
                 witchMgr.CurrentWitch.SetVisible(true);
                 witchMgr.CurrentWitch.EnableAgent(true);
-                Debug.Log("Witch: å¦¹è¦–ç‚¹ã«æˆ»ã£ãŸãŸã‚å†è¡¨ç¤ºã—ã¾ã—ãŸã€‚");
+                Debug.Log("Witch: –…‹“_‚É–ß‚Á‚½‚½‚ßÄ•\¦‚µ‚Ü‚µ‚½B");
             }
         }
     }
@@ -246,60 +247,60 @@ public class GameManager : MonoBehaviour
 
     void SavePlayerState()
     {
-        //ã©ã®ä¸–ç•Œã«ã„ã‚‹ã®ã‹ã‚’åˆ¤å®šï¼ˆç¾å®Ÿä¸–ç•Œã‹ã€æœ¬ä¸–ç•Œã®ä½•ç•ªç›®ã‹ï¼‰
+        //‚Ç‚Ì¢ŠE‚É‚¢‚é‚Ì‚©‚ğ”»’èiŒ»À¢ŠE‚©A–{¢ŠE‚Ì‰½”Ô–Ú‚©j
         string worldKey = isInBookWorld ? bookWorldScenes[currentBookWorldIndex] : realWorldScene;
 
-        //ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ä½ç½®æƒ…å ±ã‚’è¨˜éŒ²
+        //ƒvƒŒƒCƒ„[‚ÌˆÊ’uî•ñ‚ğ‹L˜^
         playerPositions[worldKey] = currentPlayer.transform.position;
 
-        //ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å›è»¢æƒ…å ±ã‚’è¨˜éŒ²
+        //ƒvƒŒƒCƒ„[‚Ì‰ñ“]î•ñ‚ğ‹L˜^
         playerRotations_y[worldKey] = currentPlayer.transform.eulerAngles.y;
         
         float cameraX = Camera.main.transform.localEulerAngles.x;
-        if (cameraX > 180f) cameraX -= 360f;    // è§’åº¦ãŒ180åº¦ã‚’è¶…ãˆã¦ã„ãŸã‚‰è² ã®è§’åº¦ã«å¤‰æ›
+        if (cameraX > 180f) cameraX -= 360f;    // Šp“x‚ª180“x‚ğ’´‚¦‚Ä‚¢‚½‚ç•‰‚ÌŠp“x‚É•ÏŠ·
         playerRotations_x[worldKey] = cameraX;
 
 
-        // æ‰€æŒã‚¢ã‚¤ãƒ†ãƒ ã®ä¿å­˜
-        if (ItemManager.pickedItem != null)     // ã‚‚ã—ã‚¢ã‚¤ãƒ†ãƒ ãŒå–å¾—ä¸­ãªã‚‰
+        // ŠƒAƒCƒeƒ€‚Ì•Û‘¶
+        if (ItemManager.pickedItem != null)     // ‚à‚µƒAƒCƒeƒ€‚ªæ“¾’†‚È‚ç
         {
-            string itemName = ItemManager.pickedItem.name;  // ã‚¢ã‚¤ãƒ†ãƒ åã‚’å–å¾—
-            Vector3 itemScale = ItemManager.originalScale;  // ã‚¢ã‚¤ãƒ†ãƒ ã®ã‚¹ã‚±ãƒ¼ãƒ«ã‚’å–å¾—
-            heldItems[worldKey] = (itemName, itemScale);    // heldItemsã«æƒ…å ±ã‚’ä¿å­˜
+            string itemName = ItemManager.pickedItem.name;  // ƒAƒCƒeƒ€–¼‚ğæ“¾
+            Vector3 itemScale = ItemManager.originalScale;  // ƒAƒCƒeƒ€‚ÌƒXƒP[ƒ‹‚ğæ“¾
+            heldItems[worldKey] = (itemName, itemScale);    // heldItems‚Éî•ñ‚ğ•Û‘¶
         }
         else
         {
-            heldItems.Remove(worldKey); // æ‰€æŒã—ã¦ã„ãªã„å ´åˆã¯è¨˜éŒ²ã‹ã‚‰å‰Šé™¤
+            heldItems.Remove(worldKey); // Š‚µ‚Ä‚¢‚È‚¢ê‡‚Í‹L˜^‚©‚çíœ
         }
 
     }
 
     Vector3 GetPlayerPosition(string worldKey)
     {
-        // worldKeyã‚’ã‚‚ã¨ã«ã€ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ä½ç½®æƒ…å ±ã‚’è¿”ã™
+        // worldKey‚ğ‚à‚Æ‚ÉAƒvƒŒƒCƒ„[‚ÌˆÊ’uî•ñ‚ğ•Ô‚·
         if (playerPositions.ContainsKey(worldKey))
             return playerPositions[worldKey];
 
-        // åˆæœŸä½ç½®
+        // ‰ŠúˆÊ’u
         return new Vector3(0, 2f, 0);
     }
 
     float GetPlayerRotation_y(string worldKey)
     {
-        // worldKeyã‚’ã‚‚ã¨ã«ã€ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å›è»¢æƒ…å ±ã‚’è¿”ã™
+        // worldKey‚ğ‚à‚Æ‚ÉAƒvƒŒƒCƒ„[‚Ì‰ñ“]î•ñ‚ğ•Ô‚·
         if (playerRotations_y.ContainsKey(worldKey))
             return playerRotations_y[worldKey];
 
-        // åˆæœŸä½ç½®
+        // ‰ŠúˆÊ’u
         return 0;
     }
     float GetPlayerRotation_x(string worldKey)
     {
-        // worldKeyã‚’ã‚‚ã¨ã«ã€ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å›è»¢æƒ…å ±ã‚’è¿”ã™
+        // worldKey‚ğ‚à‚Æ‚ÉAƒvƒŒƒCƒ„[‚Ì‰ñ“]î•ñ‚ğ•Ô‚·
         if (playerRotations_x.ContainsKey(worldKey))
             return playerRotations_x[worldKey];
 
-        // åˆæœŸä½ç½®
+        // ‰ŠúˆÊ’u
         return 0;
     }
 
@@ -312,24 +313,24 @@ public class GameManager : MonoBehaviour
             string Name = itemData.itemName;
             Vector3 Scale = itemData.scale;
 
-            GameObject foundItem = GameObject.Find(Name);   // ã‚¢ã‚¤ãƒ†ãƒ åã‚’åŸºã«ã‚¢ã‚¤ãƒ†ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æ¤œç´¢
+            GameObject foundItem = GameObject.Find(Name);   // ƒAƒCƒeƒ€–¼‚ğŠî‚ÉƒAƒCƒeƒ€ƒIƒuƒWƒFƒNƒg‚ğŒŸõ
 
             if (foundItem != null)
             {
-                // Layer ã‚’ HeldItemLayer ã«å¤‰æ›´
+                // Layer ‚ğ HeldItemLayer ‚É•ÏX
                 SetLayerRecursively(foundItem, LayerMask.NameToLayer("HeldItemLayer"));
 
                 heldItemSlot = null;
 
-                // ãƒ¡ã‚¤ãƒ³ã‚«ãƒ¡ãƒ©ã‹ã‚‰"HeldItemSlot"ã‚’æ¤œç´¢
+                // ƒƒCƒ“ƒJƒƒ‰‚©‚ç"HeldItemSlot"‚ğŒŸõ
                 heldItemSlot = Camera.main.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "HeldItemSlot");
 
-                // ã‚«ãƒ¡ãƒ©ã®å­ã«ã—ã¦å¸¸ã«è¡¨ç¤ºã•ã‚Œã‚‹ã‚ˆã†ã«
-                foundItem.transform.SetParent(heldItemSlot, true);  // ã‚¢ã‚¤ãƒ†ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’
+                // ƒJƒƒ‰‚Ìq‚É‚µ‚Äí‚É•\¦‚³‚ê‚é‚æ‚¤‚É
+                foundItem.transform.SetParent(heldItemSlot, true);  // ƒAƒCƒeƒ€ƒIƒuƒWƒFƒNƒg‚ğ
                 foundItem.transform.localPosition = Vector3.zero;
                 foundItem.transform.localRotation = Quaternion.identity;
 
-                // ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ãƒ»ãƒªã‚¸ãƒƒãƒ‰ãƒœãƒ‡ã‚£ã‚’ç„¡åŠ¹åŒ–ï¼ˆç‰©ç†å¹²æ¸‰é˜²æ­¢ï¼‰
+                // ƒRƒ‰ƒCƒ_[EƒŠƒWƒbƒhƒ{ƒfƒB‚ğ–³Œø‰»i•¨—Š±Â–h~j
                 Collider col = foundItem.GetComponent<Collider>();
                 if (col != null) col.enabled = false;
 
@@ -341,7 +342,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"[{worldKey}] ã‚·ãƒ¼ãƒ³ã« '{Name}' ã®ã‚¢ã‚¤ãƒ†ãƒ ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“ã§ã—ãŸã€‚");
+                Debug.LogWarning($"[{worldKey}] ƒV[ƒ“‚É '{Name}' ‚ÌƒAƒCƒeƒ€ƒIƒuƒWƒFƒNƒg‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ‚Å‚µ‚½B");
             }
         }
     }
@@ -359,32 +360,31 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // GameOver ã¯ WitchManager ã‹ã‚‰å‘¼ã³å‡ºã•ã‚Œã‚‹
+    // GameOver ‚Í WitchManager ‚©‚çŒÄ‚Ño‚³‚ê‚é
     public void TriggerGameOver(string reason)
     {
         Debug.Log($"GAME OVER: {reason}");
 
-        // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æ“ä½œã‚’åœæ­¢
+        // ƒvƒŒƒCƒ„[‘€ì‚ğ’â~
         PlayerController.isPlayerMove = false;
         CameraController.isCameraMove = false;
         isSceneMove = false;
 
-        // ã‚«ãƒ¼ã‚½ãƒ«ã‚’éè¡¨ç¤ºï¼†å›ºå®šã‚’è§£é™¤
+        // ƒJ[ƒ\ƒ‹‚ğ”ñ•\¦•ŒÅ’è‚ğ‰ğœ
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
 
-        // é­”å¥³BGMã®åœæ­¢ï¼ˆå®‰å…¨ç­–ï¼‰
-        var witchManager = FindFirstObjectByType<WitchManager>();
-        if (witchManager != null)
+        // –‚—BGM‚Ì’â~iˆÀ‘Sôj
+        if (WitchManager.Instance != null)
         {
-            witchManager.StopWitchBGM();
+            WitchManager.Instance.StopAllSounds();
         }
 
-        // GameOverCanvas ã‚’è¡¨ç¤º
+        // GameOverCanvas ‚ğ•\¦
         if (spawnedGameOverCanvas == null)
         {
-            // ã‚¤ãƒ³ã‚¹ãƒšã‚¯ã‚¿ã«è¨­å®šã•ã‚Œã¦ã„ã‚Œã°ãã‚Œã‚’ä½¿ã„ã€ãªã‘ã‚Œã°Resourcesã‹ã‚‰ãƒ­ãƒ¼ãƒ‰
+            // ƒCƒ“ƒXƒyƒNƒ^‚Éİ’è‚³‚ê‚Ä‚¢‚ê‚Î‚»‚ê‚ğg‚¢A‚È‚¯‚ê‚ÎResources‚©‚çƒ[ƒh
             GameObject prefab = gameOverCanvasPrefab != null
                 ? gameOverCanvasPrefab
                 : Resources.Load<GameObject>("Objects/GameOverCanvas");
@@ -401,4 +401,15 @@ public class GameManager : MonoBehaviour
         }
 
     }
+
+    public void TriggerCaughtEvent()
+    {
+        Debug.Log("[GameManager] –‚—‚É•ß‚Ü‚è‚Ü‚µ‚½BƒQ[ƒ€ƒI[ƒo[‰‰o‚ğÄ¶‚µ‚Ü‚·B");
+
+        // --- ‚±‚±‚ÉŒã‚Åƒ€[ƒr[Ä¶‚âƒV[ƒ“‘JˆÚˆ—‚ğ’Ç‰Á ---
+    }
+
 }
+
+
+
