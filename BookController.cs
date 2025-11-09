@@ -1,65 +1,76 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class BookController : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
-    private RectTransform rectTransform;      // ãƒ‰ãƒ©ãƒƒã‚¯ã™ã‚‹ãƒ†ã‚­ã‚¹ãƒˆã®RectTransform
-    private Canvas canvas;                    // ã‚¹ã‚±ãƒ¼ãƒ«è£œæ­£ç”¨ã®Canvas
-    public RectTransform keyZoneRect;         // ãƒ†ã‚­ã‚¹ãƒˆã‚’é…ç½®ã—ãŸã„ä½ç½®ã®RectTransform
-    public static bool flg = true;
+    private RectTransform rectTransform;      // ƒhƒ‰ƒbƒO‚·‚éImage‚ÌRectTransform
+    private Canvas canvas;                    // ƒXƒP[ƒ‹•â³—p‚ÌCanvas
+    public RectTransform keyZoneRect;         // Image‚ğ”z’u‚µ‚½‚¢ˆÊ’u‚ÌRectTransform
+    public static bool isGetKey = false;
 
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
         canvas = GetComponentInParent<Canvas>();
+
+        if (isGetKey)
+        {
+            SnapToKeyZoneCenter();
+        }
     }
 
-    // UIã‚’ãƒã‚¦ã‚¹ã«è¿½å¾“ã•ã›ã‚‹
+    // UI(Image)‚ğƒ}ƒEƒX‚É’Ç]‚³‚¹‚é
     public void OnDrag(PointerEventData eventData)
     {
-        rectTransform.anchoredPosition += eventData.delta / canvas.scaleFactor;
-        //ã€€ãƒ†ã‚­ã‚¹ãƒˆã®ä½ç½®(ã‚¢ãƒ³ã‚«ãƒ¼ã‹ã‚‰ã®ç›¸å¯¾ä½ç½®) += ãƒã‚¦ã‚¹ã®ç§»å‹•é‡ Ã· Canvasã®ã‚¹ã‚±ãƒ¼ãƒªãƒ³ã‚°ä¿‚æ•°
+        if (!isGetKey)
+        {
+            rectTransform.anchoredPosition += eventData.delta / canvas.scaleFactor;
+        }
     }
 
-    // ãƒ‰ãƒ©ãƒƒã‚°çµ‚äº†å‡¦ç†
+    // ƒhƒ‰ƒbƒOŠJnˆ—
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        // “Á‚É‚È‚µ
+    }
+
+    // ƒhƒ‰ƒbƒOI—¹ˆ—
     public void OnPointerUp(PointerEventData eventData)
     {
         if (IsOverlappingKeyZone())
         {
-            Debug.Log("ã‚«ã‚®ã‚’å…¥æ‰‹ã—ãŸ");
             SnapToKeyZoneCenter();
+            isGetKey = true;
         }
         else
         {
-            Debug.Log("æ­£ã—ã„ä½ç½®ã§ã¯ã‚ã‚Šã¾ã›ã‚“");
+            Debug.Log("³‚µ‚¢ˆÊ’u‚Å‚Í‚ ‚è‚Ü‚¹‚ñ");
         }
     }
 
-    // ãƒ†ã‚­ã‚¹ãƒˆãŒKeyZoneã«ã€Œä¸€éƒ¨ã§ã‚‚ã€é‡ãªã£ã¦ã„ã‚‹ã‹ã©ã†ã‹ã‚’åˆ¤å®š
+    // Image‚ªKeyZone‚Éuˆê•”‚Å‚àvd‚È‚Á‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğ”»’è
     private bool IsOverlappingKeyZone()
     {
-        Rect rectA = GetWorldRect(rectTransform);   // ãƒ†ã‚­ã‚¹ãƒˆã®çŸ©å½¢
-        Rect rectB = GetWorldRect(keyZoneRect);     // ã‚­ãƒ¼ã‚¾ãƒ¼ãƒ³ã®çŸ©å½¢
+        Rect rectA = GetWorldRect(rectTransform);   // Image‚Ì‹éŒ`
+        Rect rectB = GetWorldRect(keyZoneRect);     // ƒL[ƒ][ƒ“‚Ì‹éŒ`
 
-        // Unityã®Rectæ§‹é€ ä½“ã® Overlaps() ã‚’ä½¿ç”¨ã—ã¦ã€äº¤å·®ã‚’åˆ¤å®š
         return rectA.Overlaps(rectB);
     }
 
-    // RectTransformã‹ã‚‰ãƒ¯ãƒ¼ãƒ«ãƒ‰ç©ºé–“ã®Rectã‚’å–å¾—
+    // RectTransform‚©‚çƒ[ƒ‹ƒh‹óŠÔ‚ÌRect‚ğæ“¾
     private Rect GetWorldRect(RectTransform rt)
     {
-        Vector3[] corners = new Vector3[4];     //UI ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®4ã¤ã®è§’ã®ä½ç½®ã‚’æ ¼ç´
+        Vector3[] corners = new Vector3[4];
+        rt.GetWorldCorners(corners);
 
-        rt.GetWorldCorners(corners);    // å·¦ä¸‹â†’å·¦ä¸Šâ†’å³ä¸Šâ†’å³ä¸‹ ã®é †ã«è§’ã‚’å–å¾—ï¼ˆãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™ï¼‰
+        Vector3 bottomLeft = corners[0];
+        Vector3 topRight = corners[2];
 
-        Vector3 bottomLeft = corners[0];   // å·¦ä¸‹
-        Vector3 topRight = corners[2];     // å³ä¸Š
-
-        // å·¦ä¸‹ã¨ã‚µã‚¤ã‚ºã§Rectã‚’ä½œæˆ
         return new Rect(bottomLeft, topRight - bottomLeft);
     }
 
-    // ãƒ†ã‚­ã‚¹ãƒˆã‚’KeyZoneã®ä¸­å¿ƒã«ç§»å‹•ï¼ˆã‚¹ãƒŠãƒƒãƒ—ï¼‰
+    // Image‚ğKeyZone‚Ì’†S‚ÉˆÚ“®iƒXƒiƒbƒvj
     private void SnapToKeyZoneCenter()
     {
         rectTransform.position = keyZoneRect.position;
