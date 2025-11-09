@@ -58,3 +58,4 @@
 - StageSelectButton.cs...ステージ選択画面用処理
 - UIManager.cs...マウスによる画像UIの移動処理（付箋の移動）
 - WorldMapUpdater.cs...本に表示されるマップの更新処理
+- MoviePlayer.cs...映像再生処理
