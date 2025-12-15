@@ -2,9 +2,9 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class GateGateManager : MonoBehaviour
+public class GateManager : MonoBehaviour
 {
-    //ƒQ[ƒg‚ÉG‚ê‚½‚Ìˆ—
+    //ã‚²ãƒ¼ãƒˆã«è§¦ã‚ŒãŸæ™‚ã®å‡¦ç†
     private void OnTriggerEnter(Collider other)
     {
         ItemManager.BookCanvasAvtive = false;
@@ -12,7 +12,7 @@ public class GateGateManager : MonoBehaviour
         GameManager.isInBookWorld = false;
         
 
-        // ƒJ[ƒ\ƒ‹‚ğ”ñ•\¦•ŒÅ’è
+        // ã‚«ãƒ¼ã‚½ãƒ«ã‚’éè¡¨ç¤ºï¼†å›ºå®š
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
@@ -25,7 +25,7 @@ public class GateGateManager : MonoBehaviour
         
         if (GameManager.currentBookWorldIndex < 2)
         {
-            //ˆê“xŒ»À¢ŠEi–…‹“_j‚É–ß‚é
+            //ä¸€åº¦ç¾å®Ÿä¸–ç•Œï¼ˆå¦¹è¦–ç‚¹ï¼‰ã«æˆ»ã‚‹
             SceneManager.LoadScene("RealWorld");
             GameManager.currentBookWorldIndex++;
             GameManager.isGate = false;
@@ -38,3 +38,4 @@ public class GateGateManager : MonoBehaviour
         }
     }
 }
+
